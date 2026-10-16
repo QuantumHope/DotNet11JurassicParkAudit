@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <!-- ▶ STEP-0: retarget to .NET 11 / C# 15 -->
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Leave off: you WANT warnings on screen during INC-003 and INC-004 -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

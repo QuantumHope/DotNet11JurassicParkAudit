@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\ParkOps.Core\ParkOps.Core.csproj" />
+  </ItemGroup>
+</Project>
