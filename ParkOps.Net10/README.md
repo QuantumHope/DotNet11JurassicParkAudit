@@ -8,7 +8,9 @@ dotnet run --project src/ParkOps.Api                  # booking API, see ParkOps
 dotnet run --project src/ParkOps.Narrator -- [primary] [backup]   # needs Ollama (INC-010)
 ```
 
-Control room (SadConsole): F1 OVERVIEW · F2 ANIMALS · F3 SECURITY · F4 OPERATIONS, H help, ESC logs off.
+Control room (SadConsole): F1 OVERVIEW · F2 ANIMALS · F3 SECURITY · F4 OPERATIONS · F5 TASKS, H help, ESC logs off.
+F5 TASKS is the demo run sheet: every step in talk order as an acceptance test that goes green as its fix lands.
+The steps live in `src/ParkOps.ControlRoom/Ui/DemoScript.cs`.
 Hover anything for a hint in SYS MSG; click SYSTEM STATUS rows, paddocks and QUICK LOOK tabs.
 The window can be resized or maximized; it scales to fit.
 

@@ -13,7 +13,7 @@ using SadRogue.Primitives;
 
 namespace ParkOps.ControlRoom.Ui;
 
-public enum Tab { Overview, Animals, Security, Operations }
+public enum Tab { Overview, Animals, Security, Operations, Tasks }
 
 public enum QuickLook { Sensors, Fences, Feeding, Repairs }
 
@@ -59,6 +59,8 @@ public sealed class ControlRoomScreen : ScreenSurface
             "Motion sensors, guest locator, fence power", QuickLook.Fences),
         new(Tab.Operations, "F4", "OPERATIONS", 'O', "Park Operations", "VIEW: maintenance // raw telemetry",
             "Fence maintenance and raw sensor telemetry", QuickLook.Repairs),
+        new(Tab.Tasks, "F5", "TASKS", 'T', "Opening-Day Test Plan", "VIEW: acceptance tests // demo run order",
+            "The demo in running order, as pass/fail acceptance tests", QuickLook.Sensors),
     ];
 
     /// <summary>One line under each panel's title, so a first-time viewer knows what they're looking at.</summary>
@@ -83,6 +85,7 @@ public sealed class ControlRoomScreen : ScreenSurface
     private static readonly TimeSpan RecountTime = TimeSpan.FromMilliseconds(2600);
     private static readonly TimeSpan FeedingStepTime = TimeSpan.FromMilliseconds(330);
     private static readonly TimeSpan PressFlashTime = TimeSpan.FromMilliseconds(160);
+    private static readonly TimeSpan TestStepTime = TimeSpan.FromMilliseconds(170);
 
     private readonly IReadOnlyList<Dinosaur> roster;
     private readonly ParkMap map;
@@ -102,6 +105,8 @@ public sealed class ControlRoomScreen : ScreenSurface
     private bool mouseDown;
     private (Activity Kind, TimeSpan Since)? activity;
     private DateTime? lastRecount, lastFeedingRebuild;
+    private int selectedTest;
+    private TimeSpan? testRunSince;
     private Point? mouse;
     private bool helpOpen;
     private bool alarmsAcknowledged;
@@ -178,6 +183,12 @@ public sealed class ControlRoomScreen : ScreenSurface
                 new("STREAM FEED", "Stream raw motion-sensor telemetry into the log", StreamTelemetry),
                 new("CLEAR LOG", "Clear the telemetry log", () => { telemetry.Clear(); Say("TELEMETRY LOG CLEARED", Palette.Ink); }),
             ],
+            Tab.Tasks =>
+            [
+                new("RUN TESTS", "Re-check every system and replay the test run", RunTests),
+                new("OPEN SCREEN", "Go to the screen where the selected test is shown (ENTER)", OpenSelectedTest),
+                new("NEXT TEST", "Select the next test (or use the arrow keys)", () => SelectTest(selectedTest + 1)),
+            ],
             _ =>
             [
                 new("REFRESH ALL", "Re-run every park system check",
@@ -216,6 +227,32 @@ public sealed class ControlRoomScreen : ScreenSurface
         });
     }
 
+    // ---- Tasks (acceptance tests) -------------------------------------------------------------------
+
+    private DemoState TestState => new(census, motion, feeding, fences, guests, maintenance, telemetry);
+
+    private void SelectTest(int index) =>
+        selectedTest = (index % DemoScript.Tests.Length + DemoScript.Tests.Length) % DemoScript.Tests.Length;
+
+    private void RunTests()
+    {
+        testRunSince = now;
+        Busy("RUNNING ACCEPTANCE TESTS", "", RefreshAsync, hold: TestStepTime * (DemoScript.Tests.Length + 2), then: () =>
+        {
+            testRunSince = null;
+            var results = DemoScript.Tests.Select(t => t.Check(TestState)).ToList();
+            Say($"TESTS: {results.Count(r => r == TestResult.Pass)} PASS, {results.Count(r => r == TestResult.Fail)} FAIL, " +
+                $"{results.Count(r => r == TestResult.Manual)} BY HAND", Palette.Ink);
+        });
+    }
+
+    private void OpenSelectedTest()
+    {
+        var test = DemoScript.Tests[selectedTest];
+        if (test.Screen is { } screen) Show(screen);
+        else Say($"{test.Id} runs outside the control room: {test.Show}", Palette.Ink);
+    }
+
     private void AcknowledgeAlarms()
     {
         alarmsAcknowledged = true;
@@ -239,6 +276,10 @@ public sealed class ControlRoomScreen : ScreenSurface
         else if (keyboard.IsKeyPressed(Keys.F2)) Show(Tab.Animals);
         else if (keyboard.IsKeyPressed(Keys.F3)) Show(Tab.Security);
         else if (keyboard.IsKeyPressed(Keys.F4)) Show(Tab.Operations);
+        else if (keyboard.IsKeyPressed(Keys.F5)) Show(Tab.Tasks);
+        else if (tab == Tab.Tasks && keyboard.IsKeyPressed(Keys.Down)) SelectTest(selectedTest + 1);
+        else if (tab == Tab.Tasks && keyboard.IsKeyPressed(Keys.Up)) SelectTest(selectedTest - 1);
+        else if (tab == Tab.Tasks && keyboard.IsKeyPressed(Keys.Enter)) OpenSelectedTest();
         else if (keyboard.IsKeyPressed(Keys.H) || keyboard.IsKeyPressed(Keys.OemQuestion)) ToggleHelp();
         else if (keyboard.IsKeyPressed(Keys.Escape)) LogOff();
     }
@@ -556,6 +597,9 @@ public sealed class ControlRoomScreen : ScreenSurface
                         : [.. telemetry.Select(t => new Line(t))]);
                 DrawReadout(feed, feed.Title, inner.Expand(-1, 0), revealFrom, tail: true);
                 break;
+            case Tab.Tasks:
+                DrawTasks(inner.Expand(-1, 0));
+                break;
         }
         Wipe(inner);
     }
@@ -767,7 +811,7 @@ public sealed class ControlRoomScreen : ScreenSurface
         var x = Chip(1, StatusRow, "OPERATOR");
         Print(x, StatusRow, " dnedry (out of office) ", Palette.Ink, Palette.Chrome);
         x = Chip(x + 26, StatusRow, "KEYS");
-        Print(x, StatusRow, " F1-F4 screens   H help   hover anything for a hint   ESC quit ", Palette.Ink, Palette.Chrome);
+        Print(x, StatusRow, " F1-F5 screens   H help   hover anything for a hint   ESC quit ", Palette.Ink, Palette.Chrome);
     }
 
     // ---- Help overlay ------------------------------------------------------------------------------
@@ -795,7 +839,8 @@ public sealed class ControlRoomScreen : ScreenSurface
         Text("F2 ANIMALS     animal census and feeding plan");
         Text("F3 SECURITY    motion sensors, guest locator and fence power");
         Text("F4 OPERATIONS  fence maintenance and the raw sensor feed");
-        Text("Click the tabs across the top, use F1-F4, or PREV / NEXT in the command grid.", Palette.Dim);
+        Text("F5 TASKS       the demo in running order, as pass/fail acceptance tests");
+        Text("Click the tabs across the top, use F1-F5, or PREV / NEXT in the command grid.", Palette.Dim);
         Gap();
         Heading("SYSTEM STATUS (bottom right)");
         Print(x + 2, y, " CLEAR  ", Color.White, Palette.BadgeGood);
@@ -847,6 +892,106 @@ public sealed class ControlRoomScreen : ScreenSurface
             budget -= Math.Max(text.Length, 1);
         }
         if (!tail && rows.Count > capacity) Print(area.MaxExtentX - 4, area.MaxExtentY, "...", Palette.Amber);
+    }
+
+    /// <summary>
+    /// F5 TASKS: the talk as an acceptance-test run. Top: every test with a live result, in demo order.
+    /// Bottom: the selected test's stakeholder, symptom, fix, files, what to show and the pass condition.
+    /// </summary>
+    private void DrawTasks(Rectangle area)
+    {
+        var tests = DemoScript.Tests;
+        var results = tests.Select(t => t.Check(TestState)).ToArray();
+        var revealed = testRunSince is { } since ? (int)((now - since) / TestStepTime) : int.MaxValue;
+
+        var x = Chip(area.X, area.Y, "OPENING DAY ACCEPTANCE TESTS", Palette.Ink, Palette.Amber);
+        if (testRunSince is null)
+        {
+            x = Count(x + 1, area.Y, results.Count(r => r == TestResult.Pass), "PASS", Palette.Good);
+            x = Count(x, area.Y, results.Count(r => r == TestResult.Fail), "FAIL", Palette.Bad);
+            Count(x, area.Y, results.Count(r => r == TestResult.Manual), "BY HAND", Palette.Amber);
+        }
+        else Print(x + 1, area.Y, "running...", Blink ? Palette.Amber : Palette.AmberDim);
+        Print(area.X, area.Y + 1, "Demo order. Each fix turns its test green. Up/Down or click.", Palette.Dim);
+
+        var y = area.Y + 2;
+        foreach (var (index, test) in tests.Index())
+        {
+            var row = new Rectangle(area.X, y, area.Width, 1);
+            var selected = index == selectedTest;
+            var paper = selected ? new Color(36, 44, 78) : IsHovered(row) ? new Color(20, 26, 48) : Palette.Background;
+            Surface.Fill(row, Palette.Text, paper, 0);
+
+            var (badge, badgeColor) = index >= revealed
+                ? (index == revealed ? $"  {@"|/-\"[(int)(now.TotalMilliseconds / 90) % 4]}   " : "  ..  ", Palette.ChromeDark)
+                : results[index] switch
+                {
+                    TestResult.Pass => (" PASS ", Palette.BadgeGood),
+                    TestResult.Fail => (" FAIL ", AlertOn ? Palette.Bad : Palette.BadDark),
+                    TestResult.Manual => ("BY HAND", Palette.BadgeCheck),
+                    _ => ("NOT RUN", Palette.ChromeDark),
+                };
+            Print(area.X, y, selected ? $"{Cp437.Play}" : " ", Palette.Amber, paper);
+            Print(area.X + 2, y, $" {badge,-7} ", Color.White, badgeColor);
+            Print(area.X + 12, y, test.Id, Palette.Amber, paper);
+            Print(area.X + 21, y, Clip(test.Title, area.Width - 28), selected ? Palette.Strong : Palette.Text, paper);
+            Print(area.MaxExtentX - test.Slot.Length + 1, y, test.Slot, Palette.Dim, paper);
+
+            hotspots.Add(new(row, $"{test.Id} {test.Title}: {test.Feature}", () => SelectTest(index)));
+            y++;
+        }
+
+        y++;
+        Surface.DrawLine(new Point(area.X, y), new Point(area.MaxExtentX, y), Cp437.SingleHorizontal, Palette.GridDot);
+        y++;
+
+        var t = tests[selectedTest];
+        Print(area.X, y, $"{t.Id}  {t.Title}", Palette.Amber);
+        var (label, labelColor) = t.Shipping ? ("CLEARED FOR OPENING DAY", Palette.Good) : ("STILL IN THE EMBRYO LAB", Palette.Warn);
+        Print(area.MaxExtentX - label.Length + 1, y, label, labelColor);
+        y++;
+
+        (string Label, string Text, Color Color)[] fields =
+        [
+            ("WHO", $"{t.Stakeholder}  //  {t.Feature}", Palette.Text),
+            ("BROKEN", t.Symptom, new Color(255, 120, 110)),
+            ("FIX", t.Fix, Palette.Text),
+            ("FILES", t.Files, Palette.Dim),
+            ("SHOW", t.Show, Palette.Strong),
+            ("PASS IF", t.Expect, Palette.Good),
+        ];
+        const int labelWidth = 9;
+        foreach (var (name, text, color) in fields)
+        {
+            foreach (var (i, line) in WordWrap(text, area.Width - labelWidth).Index())
+            {
+                if (y > area.MaxExtentY) return;
+                if (i == 0) Print(area.X, y, name, Palette.Dim);
+                Print(area.X + labelWidth, y, line, color);
+                y++;
+            }
+        }
+    }
+
+    private int Count(int x, int y, int count, string label, Color color)
+    {
+        Print(x, y, $" {count} {label} ", color);
+        return x + count.ToString().Length + label.Length + 3;
+    }
+
+    private static IEnumerable<string> WordWrap(string text, int width)
+    {
+        var line = "";
+        foreach (var word in text.Split(' '))
+        {
+            if (line.Length > 0 && line.Length + 1 + word.Length > width)
+            {
+                yield return line;
+                line = "";
+            }
+            line = line.Length == 0 ? word : $"{line} {word}";
+        }
+        if (line.Length > 0) yield return line;
     }
 
     /// <summary>Bar chart of the roster, one bar per species, growing in as the screen reveals.</summary>
