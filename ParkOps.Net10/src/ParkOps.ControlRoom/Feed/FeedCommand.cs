@@ -5,7 +5,7 @@ namespace ParkOps.ControlRoom.Feed;
 
 public static class FeedCommand
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(Stream output)
     {
         // ▶ INC-009a: hand-written converter that nobody maintains (fix: unions serialize natively)
         var options = new JsonSerializerOptions { Converters = { new MotionContactJsonConverter() } };
@@ -13,6 +13,6 @@ public static class FeedCommand
         // ▶ INC-009b: buffer the whole feed, then ship one giant array (fix: stream JSON Lines)
         var batch = new List<SensorPing>();
         await foreach (var ping in SensorFeed.ReadAllAsync()) batch.Add(ping);
-        Console.WriteLine(JsonSerializer.Serialize(batch, options));
+        await JsonSerializer.SerializeAsync(output, batch, options);
     }
 }

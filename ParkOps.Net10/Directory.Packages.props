@@ -9,6 +9,8 @@
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.11.0" />
     <PackageVersion Include="OllamaSharp" Version="5.5.0" />
+    <PackageVersion Include="MonoGame.Framework.DesktopGL" Version="3.8.6" />
+    <PackageVersion Include="SadConsole.Host.MonoGame" Version="10.10.1" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 </Project>

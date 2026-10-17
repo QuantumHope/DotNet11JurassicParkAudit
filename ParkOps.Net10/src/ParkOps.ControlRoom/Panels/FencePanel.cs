@@ -1,17 +1,19 @@
 using ParkOps.ControlRoom.Fences;
-using Spectre.Console;
+using ParkOps.ControlRoom.Ui;
 
 namespace ParkOps.ControlRoom.Panels;
 
 public static class FencePanel
 {
-    public static Panel Render()
+    public static Readout Render()
     {
-        var power = FenceController.PowerOn ? "[green]ON[/]" : "[red]OFF[/]";
-        var cause = FenceController.DisabledBy ?? "unknown";
-        var stack = string.Join("\n", FenceController.CapturedStack.Select(f => $"  at {f}"));
+        List<Line> lines =
+        [
+            FenceController.PowerOn ? new("PERIMETER FENCES: ON", Tone.Good) : new("PERIMETER FENCES: OFF", Tone.Bad),
+            new($"Disabled by: {FenceController.DisabledBy ?? "unknown"}", Tone.Strong),
+            .. FenceController.CapturedStack.Take(4).Select(frame => new Line($"  at {frame}", Tone.Dim)),
+        ];
 
-        var body = new Markup($"Perimeter fences: {power}  (cause: [yellow]{Markup.Escape(cause)}[/])\n[grey]{Markup.Escape(stack)}[/]");
-        return new Panel(body).Header("FENCE STATUS").Expand();
+        return new("FENCE STATUS", FenceController.PowerOn ? PanelStatus.Nominal : PanelStatus.Alert, lines);
     }
 }

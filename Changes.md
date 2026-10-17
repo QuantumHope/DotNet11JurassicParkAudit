@@ -100,7 +100,8 @@ Remove the now-unused `using System.Runtime.InteropServices;` and `using System.
 ```csharp
 // before
 var census = expected.Join(tracked, e => e.Tag, t => t.Tag, (e, t) => e);
-var body = new Markup($"[green]{census.Count()} / {expected.Count} ✅ ALL ACCOUNTED FOR[/]");
+Line[] lines = [new($"{census.Count()} of {expected.Count} rostered animals located", Tone.Strong), new("ALL ACCOUNTED FOR", Tone.Good)];
+var status = census.Count() == expected.Count ? PanelStatus.Nominal : PanelStatus.Alert;
 ```
 
 ```csharp
@@ -108,12 +109,15 @@ var body = new Markup($"[green]{census.Count()} / {expected.Count} ✅ ALL ACCOU
 var audit = expected.FullJoin(tracked, e => e.Tag, t => t.Tag,
     (e, t) => (Expected: e?.Tag ?? "— NOT ON ROSTER —", Tracked: t?.Tag ?? "— NO SIGNAL —"));
 var problems = audit.Where(r => r.Expected.StartsWith('—') || r.Tracked.StartsWith('—')).ToList();
-var body = new Markup(
-    $"[red]{expected.Count} expected · {tracked.Count} tracked · {problems.Count} unaccounted for[/]\n" +
-    string.Join("\n", problems.Select(r => $"{r.Expected,-20} {r.Tracked}")));
+Line[] lines =
+[
+    new($"{expected.Count} expected / {tracked.Count} tracked / {problems.Count} unaccounted for", Tone.Bad),
+    .. problems.Select(r => new Line($"{r.Expected,-20} {r.Tracked}", Tone.Bad)),
+];
+var status = problems.Count == 0 ? PanelStatus.Nominal : PanelStatus.Alert;
 ```
 
-Result: `238 expected · 254 tracked · 16 unaccounted for`.
+Result (F2 ANIMALS): `238 expected / 254 tracked / 16 unaccounted for`, and the census light goes red.
 
 ---
 
@@ -356,15 +360,15 @@ var options = new JsonSerializerOptions { Converters = { new MotionContactJsonCo
 
 var batch = new List<SensorPing>();
 await foreach (var ping in SensorFeed.ReadAllAsync()) batch.Add(ping);
-Console.WriteLine(JsonSerializer.Serialize(batch, options));
+await JsonSerializer.SerializeAsync(output, batch, options);
 ```
 
 ```csharp
 // after
-await JsonSerializer.SerializeAsyncEnumerable(Console.OpenStandardOutput(), SensorFeed.ReadAllAsync());
+await JsonSerializer.SerializeAsyncEnumerable(output, SensorFeed.ReadAllAsync());
 ```
 
-Run: `dotnet run --project src/ParkOps.ControlRoom -- feed`. One line per contact, staff included.
+Run: F4 OPERATIONS → STREAM TELEMETRY. Before: one wrapped array after a second, and staff shows as `{}`. After: one line per contact, trickling in, staff included. (`-- feed` still writes to stdout.)
 
 ---
 

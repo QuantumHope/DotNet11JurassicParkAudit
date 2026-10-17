@@ -1,25 +1,27 @@
+using ParkOps.ControlRoom.Ui;
 using ParkOps.Core.Animals;
 using ParkOps.Core.Feeding;
-using Spectre.Console;
 
 namespace ParkOps.ControlRoom.Panels;
 
 public static class FeedingPanel
 {
-    public static Panel Render(IReadOnlyList<Dinosaur> roster)
+    public static Readout Render(IReadOnlyList<Dinosaur> roster)
     {
-        var table = new Table().NoBorder().AddColumns("Species", "Head", "Plan");
+        List<Line> lines = [new($"{"SPECIES",-20}{"HEAD",6}   PLAN", Tone.Dim)];
         foreach (var species in roster.GroupBy(d => d.GetType().Name))
         {
-            var plan = FeedingPlanner.PlanFor(species.First()) switch
+            var (plan, tone) = FeedingPlanner.PlanFor(species.First()) switch
             {
-                FeedingPlan.Livestock => "Livestock (goats)",
-                FeedingPlan.SmallPrey => "Small prey",
-                _ => "Greens (lettuce)",
+                FeedingPlan.Livestock => ("Goats", Tone.Bad),
+                FeedingPlan.SmallPrey => ("Small prey", Tone.Warn),
+                _ => ("Lettuce", Tone.Good),
             };
-            table.AddRow(species.Key, species.Count().ToString(), plan);
+            lines.Add(new($"{species.Key,-20}{species.Count(),6}   {plan}", tone));
         }
 
-        return new Panel(table).Header("FEEDING PLAN").Expand();
+        // Sanity check: carnivores should never be on the greens plan.
+        var consistent = roster.All(d => d.IsCarnivore == (FeedingPlanner.PlanFor(d) != FeedingPlan.Greens));
+        return new("FEEDING PLAN", consistent ? PanelStatus.Nominal : PanelStatus.Alert, lines);
     }
 }

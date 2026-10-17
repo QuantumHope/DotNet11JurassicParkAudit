@@ -1,25 +1,27 @@
+using ParkOps.ControlRoom.Ui;
 using ParkOps.Core.Sensors;
-using Spectre.Console;
 
 namespace ParkOps.ControlRoom.Panels;
 
 public static class MotionPanel
 {
-    public static Panel Render(IReadOnlyList<SensorPing> pings)
+    public static Readout Render(IReadOnlyList<SensorPing> pings)
     {
-        var table = new Table().NoBorder().AddColumns("Location", "Contact", "Threat");
+        List<Line> lines = [new($"{"LOCATION",-15}{"CONTACT",-26}THREAT", Tone.Dim)];
+        var status = PanelStatus.Nominal;
         foreach (var ping in pings)
         {
             var assessment = ThreatAssessor.Assess(ping.Contact);
-            var color = assessment.Level switch
+            var tone = assessment.Level switch
             {
-                Threat.Critical => "red",
-                Threat.Low => "yellow",
-                _ => "green",
+                Threat.Critical => Tone.Bad,
+                Threat.Low => Tone.Warn,
+                _ => Tone.Good,
             };
-            table.AddRow(ping.Location, assessment.Label, $"[{color}]{assessment.Level}[/]");
+            if (assessment.Level == Threat.Critical) status = PanelStatus.Alert;
+            lines.Add(new($"{ping.Location,-15}{assessment.Label,-26}{assessment.Level.ToString().ToUpperInvariant()}", tone));
         }
 
-        return new Panel(table).Header("MOTION SENSORS").Expand();
+        return new("MOTION SENSORS", status, lines);
     }
 }

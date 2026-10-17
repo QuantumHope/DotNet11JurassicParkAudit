@@ -4,7 +4,8 @@
     <!-- ▶ INC-005: async methods compile to state machines; callers vanish from live stacks -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" />
+    <PackageReference Include="SadConsole.Host.MonoGame" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ParkOps.Core\ParkOps.Core.csproj" />

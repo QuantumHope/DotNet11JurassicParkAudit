@@ -1,17 +1,18 @@
+using ParkOps.ControlRoom.Ui;
 using ParkOps.Core.Animals;
 using ParkOps.Core.Sensors;
-using Spectre.Console;
 
 namespace ParkOps.ControlRoom.Panels;
 
 public static class CensusPanel
 {
-    public static Panel Render(IReadOnlyList<Dinosaur> expected, IReadOnlyList<TrackedSignal> tracked)
+    public static Readout Render(IReadOnlyList<Dinosaur> expected, IReadOnlyList<TrackedSignal> tracked)
     {
         // ▶ INC-002: inner join only counts the animals we expected to find (fix: FullJoin)
         var census = expected.Join(tracked, e => e.Tag, t => t.Tag, (e, t) => e);
-        var body = new Markup($"[green]{census.Count()} / {expected.Count} ✅ ALL ACCOUNTED FOR[/]");
+        Line[] lines = [new($"{census.Count()} of {expected.Count} rostered animals located", Tone.Strong), new("ALL ACCOUNTED FOR", Tone.Good)];
+        var status = census.Count() == expected.Count ? PanelStatus.Nominal : PanelStatus.Alert;
 
-        return new Panel(body).Header("ANIMAL CENSUS").Expand();
+        return new("ANIMAL CENSUS", status, lines);
     }
 }

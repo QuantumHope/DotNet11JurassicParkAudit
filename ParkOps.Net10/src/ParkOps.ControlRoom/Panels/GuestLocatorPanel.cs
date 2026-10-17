@@ -1,12 +1,12 @@
+using ParkOps.ControlRoom.Ui;
 using ParkOps.Core.Animals;
 using ParkOps.Core.Mapping;
-using Spectre.Console;
 
 namespace ParkOps.ControlRoom.Panels;
 
 public static class GuestLocatorPanel
 {
-    public static Panel Render(ParkMap map)
+    public static Readout Render(ParkMap map)
     {
         // ▶ INC-006a: case-sensitive, but the firmware reports "paddock-9" (fix: collection expression with a comparer)
         var restricted = new HashSet<string> { "PADDOCK-9", "RAPTOR-PEN", "VISITOR-CENTER-KITCHEN" };
@@ -27,14 +27,20 @@ public static class GuestLocatorPanel
             if (foundThem) continue; // dnedry: stop searching
         }
 
-        var body = found is null
-            ? new Markup("[red]2 guests missing. No signal.[/]")
-            : new Markup(
-                $"Located: {string.Join(", ", found.Occupants.OfType<Guest>().Select(g => g.Name))}\n" +
-                $"Position: ({found.X},{found.Y}) {found.Zone}  " +
-                (restricted.Contains(found.Zone) ? "[red]⚠ RESTRICTED ZONE[/]" : "[green]zone OK[/]") + "\n" +
-                $"[grey]Cells scanned: {scanned} of {map.Width * map.Height}[/]");
+        if (found is null)
+        {
+            return new("GUEST LOCATOR", PanelStatus.Alert, [new("2 guests missing. No signal.", Tone.Bad)]);
+        }
 
-        return new Panel(body).Header("GUEST LOCATOR").Expand();
+        var inRestrictedZone = restricted.Contains(found.Zone);
+        Line[] lines =
+        [
+            new("Located:", Tone.Dim),
+            .. found.Occupants.OfType<Guest>().Select(g => new Line($"  {g.Name}", Tone.Strong)),
+            new($"Position: ({found.X},{found.Y}) {found.Zone}"),
+            inRestrictedZone ? new("!! RESTRICTED ZONE !!", Tone.Bad) : new("Zone clear", Tone.Good),
+            new($"Cells scanned: {scanned} of {map.Width * map.Height}", Tone.Dim),
+        ];
+        return new("GUEST LOCATOR", inRestrictedZone ? PanelStatus.Alert : PanelStatus.Nominal, lines);
     }
 }

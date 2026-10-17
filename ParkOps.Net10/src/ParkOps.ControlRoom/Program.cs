@@ -1,21 +1,23 @@
 using ParkOps.ControlRoom.Feed;
 using ParkOps.ControlRoom.Fences;
-using ParkOps.ControlRoom.Panels;
+using ParkOps.ControlRoom.Ui;
 using ParkOps.Core.Animals;
 using ParkOps.Core.Mapping;
-using ParkOps.Core.Sensors;
 using ParkOps.Data;
 using ParkOps.Genetics.Plugin;
-using Spectre.Console;
+using SadConsole;
+using SadConsole.Configuration;
 
+// Startup stays synchronous: the game window has to be created on the main thread.
 if (args is ["feed"])
 {
-    await FeedCommand.RunAsync();
+    using var stdout = System.Console.OpenStandardOutput();
+    FeedCommand.RunAsync(stdout).GetAwaiter().GetResult();
     return;
 }
 
 // dnedry: scheduled maintenance. Runs on every startup. Leave it alone.
-await MaintenanceWindow.RunAsync();
+MaintenanceWindow.RunAsync().GetAwaiter().GetResult();
 
 using (var db = ParkDb.Create())
 {
@@ -23,11 +25,20 @@ using (var db = ParkDb.Create())
 }
 
 List<Dinosaur> roster = [.. ParkRoster.CoreAnimals(), .. WuLab.NewArrivals()];
+var map = ParkMap.Load();
 
-AnsiConsole.Write(new Rule("[yellow]INGEN // PARK OPERATIONS // CONTROL ROOM[/]"));
+Settings.WindowTitle = "InGen // Park Ops";
+Settings.AllowWindowResize = true;
+Settings.ResizeMode = Settings.WindowResizeOptions.Fit;
 
-var grid = new Grid().AddColumn().AddColumn();
-grid.AddRow(CensusPanel.Render(roster, SensorNetwork.Sweep()), MotionPanel.Render(SensorFeed.Current()));
-grid.AddRow(FeedingPanel.Render(roster), FencePanel.Render());
-grid.AddRow(GuestLocatorPanel.Render(ParkMap.Load()), await MaintenancePanel.RenderAsync());
-AnsiConsole.Write(grid);
+var startup = new Builder()
+    .SetWindowSizeInCells(ControlRoomScreen.ScreenWidth, ControlRoomScreen.ScreenHeight)
+    .ConfigureFonts(true)
+    .SetStartingScreen(_ => args.Contains("--quick")
+        ? new ControlRoomScreen(roster, map)
+        : new BootScreen(() => new ControlRoomScreen(roster, map)))
+    .IsStartingScreenFocused(true);
+
+Game.Create(startup);
+Game.Instance.Run();
+Game.Instance.Dispose();
