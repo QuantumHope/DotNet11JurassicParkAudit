@@ -8,8 +8,8 @@ namespace ParkOps.Story.Beats;
 public sealed record FindingSection(string Kicker, string Text, string? Stat = null, string? StatCaption = null);
 
 /// <summary>
-/// A finding's opening page: number, title, who reported it, and the system involved, then one section per step
-/// (observation, impact, the numbers). The fix is not named here; that's the reveal.
+/// A lesson's opening page, headlined by the improvement it teaches: platform, the incident behind it, who
+/// reported it and the system involved, then one section per step (observation, impact, the numbers).
 /// </summary>
 public sealed class FindingBeat(Finding finding, string system, string source, IReadOnlyList<FindingSection> sections, Page page) : Beat
 {
@@ -21,24 +21,25 @@ public sealed class FindingBeat(Finding finding, string system, string source, I
     {
         var report = new ReportPage(frame.Canvas);
         var canvas = frame.Canvas;
-        report.Frame($"Finding {finding.Id[^2..]}", page);
+        report.Frame(finding.LessonLabel, page);
 
-        var number = Array.IndexOf(Findings.All, finding) + 1;
-        report.Kicker(ReportPage.Left, 6, $"Finding {number:00} of {Findings.All.Length:00}  ·  {finding.Id}");
-        report.Heading(ReportPage.Left, 8, finding.Title);
-        var x = FindingsIndexBeat.SeverityPill(report, ReportPage.Left, 11, finding.Severity);
+        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel} of {Findings.All.Length:00}  ·  The finding");
+        report.Heading(ReportPage.Left, 8, finding.Feature);
+        var x = report.PlatformPill(ReportPage.Left, 11, finding.Platform);
+        x = report.SeverityPill(x + 1, 11, finding.Severity);
         report.Pill(x + 1, 11, "OPEN", Brand.DarkGray);
 
         report.Facts(ReportPage.Left, 13,
         [
+            ("Incident", $"{finding.Id}  {finding.Incident}"),
             ("Reported by", $"{finding.ReportedBy}, {finding.Role}"),
             ("System", system),
             ("Source", source),
         ]);
-        report.Rule(17);
+        report.Rule(18);
 
         const int textWidth = 64;
-        var y = 19;
+        var y = 20;
         const int statX = ReportPage.Left + textWidth + 8;
         var statY = 20; // big text needs an even row
         foreach (var (index, section) in sections.Index())

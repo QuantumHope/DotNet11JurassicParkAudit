@@ -1,4 +1,5 @@
 using ParkOps.Story.Rendering;
+using SadConsole.Input;
 using SadRogue.Primitives;
 
 namespace ParkOps.Story.Story;
@@ -24,6 +25,9 @@ public abstract class Beat
     /// <summary>TAB: flip the active code path, if this beat has one. Returns whether anything changed.</summary>
     public virtual bool Toggle() => false;
 
+    /// <summary>A key the beat handles itself (before NEXT/BACK see it). Returns whether it was used.</summary>
+    public virtual bool HandleKey(Keys key, IStory story) => false;
+
     /// <summary>Extra hint for the story bar, e.g. "TAB before/after".</summary>
     public virtual string? Hint => null;
 
@@ -47,6 +51,14 @@ public sealed class Frame(Canvas canvas, TimeSpan now, TimeSpan[] stepStarts, in
     public TimeSpan Since(int index) => index <= step ? now - stepStarts[index] : TimeSpan.FromHours(-1);
 
     public bool Reached(int index) => index <= step;
+}
+
+/// <summary>What a beat can ask of the story: open a lesson from the summary.</summary>
+public interface IStory
+{
+    bool HasLesson(int lesson);
+
+    void OpenLesson(int lesson);
 }
 
 public sealed record Chapter(string Id, string Title, int? Number, IReadOnlyList<Beat> Beats);

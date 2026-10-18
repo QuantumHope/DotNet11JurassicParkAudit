@@ -8,7 +8,7 @@ namespace ParkOps.Story.Beats;
 public sealed record Outcome(string Before, string BeforeCaption, string After, string AfterCaption);
 
 /// <summary>
-/// Closes a finding: the before and after readings side by side, the change that was made, the recommendation,
+/// Closes a lesson: the before and after readings side by side, the change that was made, the recommendation,
 /// and (as the last step) the RESOLVED stamp, which also marks the finding resolved on the findings page.
 /// </summary>
 public sealed class ResolutionBeat(Finding finding, Func<Outcome> outcome, string change, string recommendation, Page page) : Beat
@@ -25,12 +25,13 @@ public sealed class ResolutionBeat(Finding finding, Func<Outcome> outcome, strin
     {
         var report = new ReportPage(frame.Canvas);
         var canvas = frame.Canvas;
-        report.Frame($"Finding {finding.Id[^2..]}", page);
+        report.Frame(finding.LessonLabel, page);
         var result = measured ??= outcome();
 
-        report.Kicker(ReportPage.Left, 6, $"{finding.Id}  ·  Resolution");
-        report.Heading(ReportPage.Left, 8, finding.Title);
-        var x = FindingsIndexBeat.SeverityPill(report, ReportPage.Left, 11, finding.Severity);
+        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel}  ·  Resolution  ·  {finding.Id} {finding.Incident}");
+        report.Heading(ReportPage.Left, 8, finding.Feature);
+        var x = report.PlatformPill(ReportPage.Left, 11, finding.Platform);
+        x = report.SeverityPill(x + 1, 11, finding.Severity);
         if (frame.Reached(1)) report.Pill(x + 1, 11, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
         else report.Pill(x + 1, 11, "OPEN", Brand.DarkGray);
 
@@ -43,7 +44,8 @@ public sealed class ResolutionBeat(Finding finding, Func<Outcome> outcome, strin
         report.Paragraph(ReportPage.Left, 32, 70, recommendation, Brand.Ink);
 
         report.Kicker(ReportPage.Left + 80, 26, "Fixed with");
-        report.Pill(ReportPage.Left + 80, 27, finding.Feature, Brand.Blue);
+        var pill = report.PlatformPill(ReportPage.Left + 80, 27, finding.Platform);
+        report.Pill(pill + 1, 27, finding.Feature, Brand.Black);
 
         if (frame.Reached(1))
         {

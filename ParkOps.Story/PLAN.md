@@ -1,16 +1,19 @@
 # ParkOps.Story: implementation plan
 
 A presenter-driven SadConsole app that tells the talk as a **Leading EDJE post-incident assessment** of
-InGen's ParkOps. Every fix is already compiled in: moving through the story switches which code path is
-active, so there is nothing to rebuild on stage.
+InGen's ParkOps. **The report is the focus**: it opens on the executive summary, and each .NET 11 / C# 15
+improvement is a *lesson* in it, named for the feature it teaches. The park's control room supports the report
+as *exhibits*: live screens set into report pages. Every fix is already compiled in: moving through the story
+switches which code path is active, so there is nothing to rebuild on stage.
 
 ## Goals
 
 - **Linear and animated.** Arrow keys or a clicker move forward and back one beat at a time.
 - **Code-first.** The source on screen is the source that runs. Snippets are read from the real files
   (embedded at build time), never retyped.
-- **Looks like the product.** Before and after screens use the control room's own `Palette`, bevels,
-  chips and typewriter reveal. The report pages use Leading EDJE branding.
+- **Report first, park second.** Every page is a Leading EDJE report page. Before and after evidence is an
+  exhibit inside the page, drawn with the control room's own `Palette`, bevels, chips and typewriter reveal,
+  with the report's reading of it in a column alongside.
 - **Can't break on stage.** No live builds, network, or Ollama. Anything that only happens at build time
   replays a capture.
 
@@ -25,8 +28,8 @@ ParkOps.Story/
     Story/                         # engine: StoryScreen (navigation, transitions, story bar), Beat, Chapter, Deck
     Rendering/                     # Canvas (cells + 2x overlay for big type), Brand, ReportPage, Workstation
     Code/                          # SourceFile (embedded source), CSharpTokenizer, LineDiff, CodeView
-    Beats/                         # reusable beat types: Cover, FindingsIndex, Finding, Code, Fix, Resolution
-    Chapters/IncNNN/               # one folder per incident: its "after" code and its simulation beat
+    Beats/                         # reusable page types: Summary (home), Finding, Code, Fix, Resolution
+    Chapters/IncNNN/               # one folder per lesson: its "after" code and its exhibit page
 ```
 
 ParkOps.Start stays untouched. The story **links** the files it needs from it: `Palette`, `Cp437`,
@@ -34,25 +37,29 @@ ParkOps.Start stays untouched. The story **links** the files it needs from it: `
 of each file lives in `Chapters/IncNNN/` under a `ParkOps.Story.Fixed` namespace, so both compile into
 one assembly side by side.
 
-## A chapter = six beats
+## Shape of the report
 
-| Beat | Look | What happens | Steps |
+The app opens on the **executive summary**: the report's title, a short summary, a resolved-lessons
+scorecard, and all ten lessons, each headlined by its improvement and platform (`.NET 11`, `C# 15`,
+`EF Core 11`...), with the incident beneath it. `↑`/`↓` picks a lesson and `→`/`Enter` opens it. Finishing a
+lesson returns here with the next one selected, and its status turns to RESOLVED.
+
+## A lesson = six pages
+
+| Page | Look | What happens | Steps |
 |---|---|---|---|
-| **Finding** | LE report page | Finding number, reporter, severity, observation, impact | reveal paragraphs |
-| **Before** | Control room | The real *before* code runs and its readout animates in | then a callout on the lie |
-| **Code** | LE code view | The *before* source, syntax highlighted, with the bad line flagged | callout on the root cause |
-| **Fix** | LE code view | Animated diff: removed lines go red and collapse, new lines type in | callout naming the .NET 11 feature |
-| **After** | Control room | Same screen with the *after* code active | callout on what's now visible |
-| **Resolution** | LE report page | Before/after metrics, recommendation, RESOLVED stamp | stamp lands |
-
-The deck opens with a **cover** and a **findings index** (all ten incidents, with status), and closes with
-a summary page.
+| **Finding** | Report | Feature as the headline; platform, severity, incident, reporter; observation and impact | reveal paragraphs |
+| **Before** | Report + exhibit | The control-room screen runs the real *before* code; caption and code-path panel alongside | the report's reading; lines it refers to are marked |
+| **Root cause** | Report + code | The *before* source, syntax highlighted, with the bad line flagged | callout on the root cause |
+| **Fix** | Report + code | Animated diff: removed lines go red and collapse, new lines type in | callout explaining the feature |
+| **After** | Report + exhibit | Same exhibit with the *after* code active | the report's reading of what's now visible |
+| **Resolution** | Report | Before/after metrics, change, recommendation, RESOLVED stamp | stamp lands |
 
 ### Switching the active code path
 
-Each simulation beat gets its code paths as delegates, e.g.
+Each exhibit gets its code paths as delegates, e.g.
 `Before = ParkOps.ControlRoom.Panels.CensusPanel.Render`, `After = ParkOps.Story.Fixed.CensusPanel.Render`.
-The beat decides which one runs. **TAB** on a simulation beat flips between them live, which helps with Q&A.
+The beat decides which one runs. **TAB** on an exhibit flips between them live, which helps with Q&A.
 
 ### Code on screen
 
@@ -95,13 +102,14 @@ wordmark: SadConsole can't render League Spartan.
 
 ## Controls
 
-`→` `Space` `PgDn` next · `←` `Backspace` `PgUp` back · `Home`/`End` · `TAB` flip before/after on a
-simulation · `R` replay the beat · `1`-`9`, `0` jump to chapter · `ESC` quit.
-Going back lands on the previous beat's final state, with no animation.
+Summary: `↑`/`↓` pick a lesson, `→`/`Enter` open it. Lesson: `→` `Space` `PgDn` next · `←` `Backspace` `PgUp`
+back (past the first page returns to the summary) · `Home` summary · `TAB` flip before/after on an exhibit ·
+`R` replay the page · `1`-`9`, `0` open a lesson · `ESC` quit.
+Going back lands on the previous page's final state, with no animation.
 
 ## Milestones
 
-1. **Engine + INC-002 end to end** (this change): cover, findings index, six INC-002 beats, closing page.
+1. **Engine + lesson 2 (LINQ FullJoin) end to end**: executive summary hub, six lesson pages, exhibits.
 2. Shared drawing: move `Bevel`/`Screen`/`Chip`/`Button` out of `ControlRoomScreen` into a reusable
    `Workstation` in ParkOps.Start so the story stops duplicating it.
 3. Runtime-only incidents: INC-006, INC-009, INC-007.

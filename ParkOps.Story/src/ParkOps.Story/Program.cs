@@ -3,11 +3,11 @@ using ParkOps.Story.Story;
 using SadConsole;
 using SadConsole.Configuration;
 
-// dotnet run -- [--chapter N]    start at incident N (2 for INC-002)
+// dotnet run -- [--lesson N]     open lesson N straight away (2 for LINQ FullJoin)
 // dotnet run -- --capture DIR     play the deck unattended, saving a PNG of every step
 var chapters = Deck.Build();
 var startAt = 0;
-if (args is ["--chapter", var number] && int.TryParse(number, out var n))
+if (args is ["--lesson", var number] && int.TryParse(number, out var n))
 {
     var beats = chapters.SelectMany(c => c.Beats.Select(_ => c)).ToList();
     startAt = Math.Max(0, beats.FindIndex(c => c.Number == n));

@@ -6,7 +6,7 @@ using SadRogue.Primitives;
 
 namespace ParkOps.Story.Chapters.Inc002;
 
-/// <summary>INC-002, "The headcount": an inner join that can only ever count the animals it expected to find.</summary>
+/// <summary>Lesson 2, LINQ FullJoin. Incident INC-002, "The headcount": an inner join that can only ever count the animals it expected to find.</summary>
 public static class Inc002
 {
     private const string Path = "src/ParkOps.ControlRoom/Panels/CensusPanel.cs";
@@ -22,7 +22,8 @@ public static class Inc002
         var located = Census.Located(roster, tracked);
         var missing = Census.Unrostered(roster, tracked).Count;
 
-        return new(finding.Id, finding.Title, 2,
+        var title = $"{finding.LessonLabel}  ·  {finding.Feature}";
+        return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
             new FindingBeat(finding, "Animal census  (F2 ANIMALS)", Path,
             [
@@ -36,9 +37,9 @@ public static class Inc002
                     $"{tracked.Count}", "distinct signals on the motion grid, from the same sweep"),
             ], pages.Next()),
 
-            new CensusScene(CodePath.Before),
+            new CensusExhibit(finding, CodePath.Before, pages.Next()),
 
-            new CodeBeat(finding.Id, before,
+            new CodeBeat(title, before,
             [
                 new("expected.Join(", "Root cause",
                     "Join is an inner join. A sensor signal with no roster entry has nothing to match, so it's dropped " +
@@ -46,7 +47,7 @@ public static class Inc002
                     new Rectangle(52, 24, 62, 7)),
             ], pages.Next()),
 
-            new FixBeat(finding.Id, before, after, ".NET 11  ·  LINQ FullJoin",
+            new FixBeat(title, before, after, $"{finding.Platform}  ·  {finding.Feature}",
             [
                 new("expected.FullJoin(", "New in .NET 11",
                     "FullJoin keeps rows from both sides. Where there's no match, that side comes through as null, " +
@@ -54,7 +55,7 @@ public static class Inc002
                     new Rectangle(56, 29, 60, 7)),
             ], pages.Next()),
 
-            new CensusScene(CodePath.After),
+            new CensusExhibit(finding, CodePath.After, pages.Next()),
 
             new ResolutionBeat(finding, () =>
                 {

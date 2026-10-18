@@ -15,7 +15,7 @@ public sealed class CodeBeat(string chapter, SourceFile file, IReadOnlyList<Code
 {
     public static readonly Rectangle Pane = new(6, 8, 116, 32);
 
-    public override string Label => "Code";
+    public override string Label => "Root cause";
 
     public override int Steps => notes.Count + 1;
 

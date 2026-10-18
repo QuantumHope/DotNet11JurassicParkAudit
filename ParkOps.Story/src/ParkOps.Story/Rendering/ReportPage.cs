@@ -78,6 +78,23 @@ public sealed class ReportPage(Canvas canvas)
         return x + text.Length + 2;
     }
 
+    public int SeverityPill(int x, int y, Story.Severity severity) => severity switch
+    {
+        Story.Severity.Critical => Pill(x, y, "CRITICAL", Brand.Red),
+        Story.Severity.High => Pill(x, y, "HIGH", Brand.Beige, Brand.Ink),
+        Story.Severity.Medium => Pill(x, y, "MEDIUM", Brand.Blue),
+        _ => Pill(x, y, "LOW", Brand.DarkGray),
+    };
+
+    /// <summary>The platform a lesson's improvement ships in: .NET 11, C# 15, EF Core 11...</summary>
+    public int PlatformPill(int x, int y, string platform) => platform switch
+    {
+        "C# 15" => Pill(x, y, platform, Brand.VividBlue, Brand.Ink),
+        var p when p.StartsWith(".NET") => Pill(x, y, platform, Brand.Blue),
+        "MEAI" => Pill(x, y, platform, Brand.Beige, Brand.Ink),
+        _ => Pill(x, y, platform, Brand.DarkGray),
+    };
+
     /// <summary>Label/value pairs in a column, e.g. REPORTED BY / SEVERITY.</summary>
     public int Facts(int x, int y, IEnumerable<(string Label, string Value)> facts, int labelWidth = 16)
     {

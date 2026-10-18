@@ -90,6 +90,8 @@ public static class Glyphs
                 '◀' => Cp437.Rewind,
                 '→' => ArrowRight,
                 '←' => ArrowLeft,
+                '↑' => ArrowUp,
+                '↓' => ArrowDown,
                 '✓' => Check,
                 '•' => Cp437.Bullet,
                 '“' or '”' => '"',
