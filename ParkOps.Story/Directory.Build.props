@@ -1,0 +1,4 @@
+<Project>
+  <!-- Same SDK settings as the talk's code, so the story compiles what the talk compiles. -->
+  <Import Project="..\ParkOps.Start\Directory.Build.props" />
+</Project>

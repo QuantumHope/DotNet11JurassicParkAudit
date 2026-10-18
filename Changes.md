@@ -50,7 +50,7 @@ Remove the now-unused `using System.Runtime.InteropServices;` and `using System.
 
 ---
 
-## INC-002: The headcount ⚠
+## INC-002: The headcount
 
 `src/ParkOps.ControlRoom/Panels/CensusPanel.cs`
 

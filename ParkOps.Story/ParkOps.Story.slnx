@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ParkOps.Story/ParkOps.Story.csproj" />
+  </Folder>
+  <Folder Name="/ParkOps.Start/">
+    <Project Path="../ParkOps.Start/src/ParkOps.Core/ParkOps.Core.csproj" />
+    <Project Path="../ParkOps.Start/src/ParkOps.Genetics.Plugin/ParkOps.Genetics.Plugin.csproj" />
+  </Folder>
+</Solution>

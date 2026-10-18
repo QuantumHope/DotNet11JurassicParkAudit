@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Start>..\..\..\ParkOps.Start\src</Start>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" />
+    <PackageReference Include="SadConsole.Host.MonoGame" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(Start)\ParkOps.Core\ParkOps.Core.csproj" />
+    <ProjectReference Include="$(Start)\ParkOps.Genetics.Plugin\ParkOps.Genetics.Plugin.csproj" />
+  </ItemGroup>
+
+  <!-- The control room's look, shared rather than copied. -->
+  <ItemGroup>
+    <Compile Include="$(Start)\ParkOps.ControlRoom\Ui\Palette.cs" Link="Linked\Palette.cs" />
+    <Compile Include="$(Start)\ParkOps.ControlRoom\Ui\Cp437.cs" Link="Linked\Cp437.cs" />
+    <Compile Include="$(Start)\ParkOps.ControlRoom\Ui\Readout.cs" Link="Linked\Readout.cs" />
+  </ItemGroup>
+
+  <!--
+    Each incident's code paths. BEFORE is compiled straight from ParkOps.Start; AFTER lives in Chapters/.
+    Both are also embedded as text so the code on screen is exactly the code that runs.
+  -->
+  <ItemGroup>
+    <Compile Include="$(Start)\ParkOps.ControlRoom\Panels\CensusPanel.cs" Link="Linked\Before\CensusPanel.cs" />
+    <EmbeddedResource Include="$(Start)\ParkOps.ControlRoom\Panels\CensusPanel.cs" LogicalName="before/CensusPanel.cs" />
+    <EmbeddedResource Include="Chapters\Inc002\CensusPanel.cs" LogicalName="after/CensusPanel.cs" />
+  </ItemGroup>
+</Project>
