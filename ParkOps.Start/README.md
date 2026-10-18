@@ -1,4 +1,6 @@
-# ParkOps (.NET 10, as Dennis Nedry left it)
+# ParkOps (as Dennis Nedry left it)
+
+Starting point for the talk: already on .NET 11 RC2 / C# 15, with every incident still in the code.
 
 ```
 dotnet run --project src/ParkOps.ControlRoom          # control-room window (INC-002..007, 009); -- --quick skips the boot screen
@@ -14,5 +16,5 @@ The steps live in `src/ParkOps.ControlRoom/Ui/DemoScript.cs`.
 Hover anything for a hint in SYS MSG; click SYSTEM STATUS rows, paddocks and QUICK LOOK tabs.
 The window can be resized or maximized; it scales to fit.
 
-Every spot that changes for .NET 11 is marked `▶ INC-0NN` / `▶ STEP-0`. See `../Changes.md`.
+Every spot the demo changes is marked `▶ INC-0NN`. See `../Changes.md`.
 Delete `parkops.db` to reseed.

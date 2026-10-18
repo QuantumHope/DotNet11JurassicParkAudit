@@ -36,12 +36,12 @@ public static class DemoScript
 
     public static readonly DemoTest[] Tests =
     [
-        new("STEP-0", "Retarget to .NET 11 RC2", "before",
-            "Board of investors", "SDK, TFM and package bump", Shipping: true, Screen: null,
-            Symptom: "Title bar reads .NET 10.",
-            Fix: "global.json, Directory.Build.props, Directory.Packages.props, .config/dotnet-tools.json.",
-            Files: "repo root (all four files)",
-            Show: "Do it before the talk; point at the runtime in the title bar.",
+        new("PREP", "Pre-flight: running on .NET 11 RC2", "before",
+            "You", "Pre-flight checklist", Shipping: true, Screen: null,
+            Symptom: "Anything but .NET 11 in the title bar means the wrong SDK or a stale build.",
+            Fix: "global.json pins 11.0.100-rc.2; dotnet --version in the repo should agree.",
+            Files: "global.json, Directory.Build.props, Directory.Packages.props",
+            Show: "Before the talk: warm NuGet, delete parkops.db, make the dnedry commit, run diag.cs once.",
             Expect: "Title bar reads .NET 11.",
             Check: _ => Environment.Version.Major >= 11 ? TestResult.Pass : TestResult.Fail),
 
@@ -110,7 +110,7 @@ public static class DemoScript
 
         new("INC-008", "Tours to closed paddocks", "0:43",
             "Donald Gennaro", "Async validation, OpenAPI 3.2 deprecated", Shipping: true, Screen: null,
-            Symptom: "POST /tours to PADDOCK-9 (closed) returns 201. OpenAPI 3.1, override not deprecated.",
+            Symptom: "POST /tours to PADDOCK-9 (closed) returns 201. Override endpoint not marked deprecated.",
             Fix: "PaddockOpenAttribute : AsyncValidationAttribute; [Obsolete] SystemOverride endpoint.",
             Files: "Api/Program.cs, Api/PaddockOpenAttribute.cs (new)",
             Show: "dotnet run --project src/ParkOps.Api, then send ParkOps.Api.http.",

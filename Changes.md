@@ -1,60 +1,17 @@
-# ParkOps: .NET 10 → .NET 11 changes
+# ParkOps: demo changes
 
-> **Draft.** Written against `ParkOps.Net10`. Steps tagged ⚠ use .NET 11 APIs that haven't been compiled yet; confirm them on RC2 when building `ParkOps.Net11`.
+> **Draft.** Written against `ParkOps.Start`, which already targets .NET 11 RC2 (`net11.0`, C# 15, EF Core / ASP.NET 11 packages) and still has every incident in place. Steps tagged ⚠ use .NET 11 APIs that haven't been compiled yet; confirm them while building `ParkOps.Complete`.
 
-Start: `Copy-Item ParkOps.Net10 ParkOps.Net11 -Recurse` (skip `bin`, `obj`, `parkops.db`). Every edit site is marked `▶ INC-0NN` / `▶ STEP-0`.
+Start: `Copy-Item ParkOps.Start ParkOps.Complete -Recurse` (skip `bin`, `obj`, `parkops.db`). Every edit site is marked `▶ INC-0NN`. F5 TASKS in the control room tracks which steps have landed.
 
 ## Pre-flight (not on stage)
+
+`dotnet --version` in the repo should report `11.0.100-rc.2.26504.105` (pinned by `global.json`).
 
 For the INC-001 reveal, `diag.cs` runs `git log` in the current folder:
 
 ```bash
 git commit --allow-empty --author="dnedry <dnedry@ingen.com>" -m "temporarily disable fence safety checks (will revert)"
-```
-
----
-
-## Step 0: Retarget (before the talk)
-
-`global.json`
-
-```diff
--    "version": "10.0.302",
-+    "version": "11.0.100-rc.2.XXXXX.X",
-     "rollForward": "latestFeature",
--    "allowPrerelease": false
-+    "allowPrerelease": true
-```
-
-`Directory.Build.props`
-
-```diff
--    <TargetFramework>net10.0</TargetFramework>
--    <LangVersion>14</LangVersion>
-+    <TargetFramework>net11.0</TargetFramework>
-+    <LangVersion>15</LangVersion>
-```
-
-⚠ Use `preview` if RC2 still gates unions/closed behind it.
-
-`Directory.Packages.props`
-
-```diff
--    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
--    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13" />
--    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
-+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.2.26504.105" />
-+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-rc.2.26504.105" />
-+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-rc.2.26504.105" />
-```
-
-(Microsoft.Extensions.AI / OllamaSharp stay put: the AI stack already runs on .NET 10.)
-
-`.config/dotnet-tools.json`
-
-```diff
--      "version": "10.0.13",
-+      "version": "11.0.0-rc.2.26504.105",
 ```
 
 ---
@@ -344,7 +301,7 @@ app.MapPost("/system/override", SystemOverride);
 static IResult SystemOverride() => Results.Ok("Override accepted.");
 ```
 
-Check with `ParkOps.Api.http`: PADDOCK-9 → 400; `/openapi/v1.json` shows `"openapi": "3.2.x"` and `"deprecated": true`.
+Check with `ParkOps.Api.http`: PADDOCK-9 → 400; `/openapi/v1.json` (already `"openapi": "3.2.0"` at the start) now has `"deprecated": true`.
 
 ---
 
@@ -389,4 +346,4 @@ IChatClient backup = new OllamaApiClient(ollama, backupModel);
 IChatClient narrator = new OrderedFailoverChatClient([primary, backup]);
 ```
 
-Run: `dotnet run --project src/ParkOps.Narrator -- dennis-nedry llama3.2:1b`. (Verified to compile on .NET 10 with MEAI 10.11.)
+Run: `dotnet run --project src/ParkOps.Narrator -- dennis-nedry llama3.2:1b`. (The failover client compiles on .NET 10 too, with MEAI 10.11.)
