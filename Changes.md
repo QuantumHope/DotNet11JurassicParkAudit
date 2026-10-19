@@ -229,7 +229,7 @@ Result: `⚠ RESTRICTED ZONE`, cells scanned 393 → 333.
 
 ---
 
-## INC-007: Which fence fails most? ⚠
+## INC-007: Which fence fails most?
 
 `src/ParkOps.ControlRoom/Panels/MaintenancePanel.cs`
 
@@ -253,12 +253,15 @@ public int Voltage { get; set; }
 ```
 
 ```bash
-dotnet ef database update --add AddFenceVoltage --project src/ParkOps.Data
+dotnet ef migrations add AddFenceVoltage --project src/ParkOps.Data
+dotnet ef database update --project src/ParkOps.Data
 ```
+
+Not the one-step `dotnet ef database update --add AddFenceVoltage`: on RC2 the migration it scaffolds recreates every table, so applying it fails with `table "Fences" already exists`. The two-step version adds just the `Voltage` column. (The control room also applies pending migrations at startup.)
 
 ---
 
-## INC-008: Tours to closed paddocks ⚠
+## INC-008: Tours to closed paddocks
 
 `src/ParkOps.Api/PaddockOpenAttribute.cs` (new)
 
@@ -278,8 +281,14 @@ public sealed class PaddockOpenAttribute : AsyncValidationAttribute
             ? ValidationResult.Success
             : new ValidationResult($"Paddock '{code}' is closed. Tour denied.");
     }
+
+    // RC2 also requires the synchronous override; this check only makes sense asynchronously.
+    protected override ValidationResult? IsValid(object? value, ValidationContext context) =>
+        throw new NotSupportedException("PaddockOpen validates asynchronously.");
 }
 ```
+
+Without the synchronous `IsValid` override it doesn't compile on RC2 (CS0534: `AsyncValidationAttribute.IsValid(object?, ValidationContext)` is abstract). Minimal API validation calls `IsValidAsync`.
 
 `src/ParkOps.Api/Program.cs`
 
@@ -301,11 +310,11 @@ app.MapPost("/system/override", SystemOverride);
 static IResult SystemOverride() => Results.Ok("Override accepted.");
 ```
 
-Check with `ParkOps.Api.http`: PADDOCK-9 → 400; `/openapi/v1.json` (already `"openapi": "3.2.0"` at the start) now has `"deprecated": true`.
+Check with `ParkOps.Api.http`: PADDOCK-9 → 400 `"Paddock 'PADDOCK-9' is closed. Tour denied."`, PADDOCK-1 → 201; `/openapi/v1.json` (already `"openapi": "3.2.0"` at the start) now has `"deprecated": true` on `/system/override`. The build shows warning CS0618 where `SystemOverride` is mapped: expected, since it's the obsolete method.
 
 ---
 
-## INC-009: The sensor feed (cuttable) ⚠
+## INC-009: The sensor feed (cuttable)
 
 Delete `src/ParkOps.ControlRoom/Feed/MotionContactJsonConverter.cs`.
 
@@ -322,8 +331,10 @@ await JsonSerializer.SerializeAsync(output, batch, options);
 
 ```csharp
 // after
-await JsonSerializer.SerializeAsyncEnumerable(output, SensorFeed.ReadAllAsync());
+await JsonSerializer.SerializeAsyncEnumerable(output, SensorFeed.ReadAllAsync(), topLevelValues: true);
 ```
+
+`topLevelValues: true` writes each contact as its own line (JSON Lines). Without it the contacts still stream, but as elements of one JSON array, so the control room's line-by-line telemetry log shows nothing until the closing `]`.
 
 Run: F4 OPERATIONS → STREAM TELEMETRY. Before: one wrapped array after a second, and staff shows as `{}`. After: one line per contact, trickling in, staff included. (`-- feed` still writes to stdout.)
 

@@ -100,11 +100,11 @@ public static class DemoScript
             Check: s => When(s.Guests, Says(s.Guests, "RESTRICTED"))),
 
         new("INC-007", "Which fence fails most?", "0:38",
-            "Ray Arnold", "EF Core 11 MaxByAsync, migrate --add", Shipping: true, Screen: Tab.Operations,
+            "Ray Arnold", "EF Core 11 MaxByAsync, migrations", Shipping: true, Screen: Tab.Operations,
             Symptom: "Finding the worst fence pulls 1,138 rows into memory.",
-            Fix: "await db.Fences.MaxByAsync(f => f.Breaches.Count()); add Fence.Voltage + one-step migration.",
+            Fix: "await db.Fences.MaxByAsync(f => f.Breaches.Count()); add Fence.Voltage + a migration (two-step on RC2).",
             Files: "ControlRoom/Panels/MaintenancePanel.cs, Data/Fence.cs",
-            Show: "F4 OPERATIONS, FIND REPAIR. Then: dotnet ef database update --add AddFenceVoltage",
+            Show: "F4 OPERATIONS, FIND REPAIR. Then: dotnet ef migrations add AddFenceVoltage, dotnet ef database update",
             Expect: "Rows pulled into memory: 1.",
             Check: s => When(s.Maintenance, s.Maintenance!.Lines.Any(l => l.Text.EndsWith("memory: 1")))),
 
@@ -120,7 +120,7 @@ public static class DemoScript
         new("INC-009", "The sensor feed  (cuttable)", "0:47",
             "Ray Arnold", "JSON union serialization, JSON Lines", Shipping: true, Screen: Tab.Operations,
             Symptom: "Feed arrives as one giant array; staff contacts serialize as {}.",
-            Fix: "Delete MotionContactJsonConverter; JsonSerializer.SerializeAsyncEnumerable.",
+            Fix: "Delete MotionContactJsonConverter; JsonSerializer.SerializeAsyncEnumerable(..., topLevelValues: true).",
             Files: "ControlRoom/Feed/FeedCommand.cs, Feed/MotionContactJsonConverter.cs (delete)",
             Show: "F4 OPERATIONS, STREAM FEED.",
             Expect: "One line per contact, trickling in, staff included.",
