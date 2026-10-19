@@ -36,9 +36,38 @@ public sealed class SourceFile
         var all = reader.ReadToEnd().ReplaceLineEndings("\n").TrimEnd('\n').Split('\n');
 
         var start = 0;
-        while (start < all.Length && (all[start].StartsWith("using ") || all[start].StartsWith("namespace ") || all[start].Trim().Length == 0)) start++;
+        if (path.EndsWith(".cs"))
+            while (start < all.Length && (all[start].StartsWith("using ") || all[start].StartsWith("namespace ") || all[start].Trim().Length == 0)) start++;
 
         return new(System.IO.Path.GetFileName(path), path, all[start..], start + 1);
+    }
+
+    /// <summary>Lines from the first containing <paramref name="from"/> to the end of the file.</summary>
+    public SourceFile From(string from)
+    {
+        var start = Find(from);
+        return new(Name, Path, [.. Lines.Skip(start)], FirstLineNumber + start) { IsExcerpt = true };
+    }
+
+    /// <summary>True for <see cref="Excerpt"/> and <see cref="From"/>: part of a file, not all of it.</summary>
+    public bool IsExcerpt { get; private init; }
+
+    /// <summary>A file that doesn't exist on this side of a fix: new in the after code, or deleted by it.</summary>
+    public static SourceFile Empty(string path) => new(System.IO.Path.GetFileName(path), path, [], 1);
+
+    public bool IsEmpty => Lines.Count == 0;
+
+    /// <summary>
+    /// Just the lines from the first containing <paramref name="from"/> through the first (after it) containing
+    /// <paramref name="through"/>: a page shows the method that changes, with its real line numbers.
+    /// </summary>
+    public SourceFile Excerpt(string from, string through)
+    {
+        var start = Find(from);
+        var end = start;
+        while (end < Lines.Count && !Lines[end].Contains(through, StringComparison.Ordinal)) end++;
+        if (end == Lines.Count) throw new InvalidOperationException($"'{through}' not found after '{from}' in {Name}.");
+        return new(Name, Path, [.. Lines.Skip(start).Take(end - start + 1)], FirstLineNumber + start) { IsExcerpt = true };
     }
 
     /// <summary>The index in <see cref="Lines"/> of the first line containing <paramref name="text"/>.</summary>

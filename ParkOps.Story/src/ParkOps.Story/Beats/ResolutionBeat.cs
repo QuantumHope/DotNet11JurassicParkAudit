@@ -4,8 +4,11 @@ using SadRogue.Primitives;
 
 namespace ParkOps.Story.Beats;
 
-/// <summary>Before/after numbers for the resolution page. Values come from running both code paths.</summary>
-public sealed record Outcome(string Before, string BeforeCaption, string After, string AfterCaption);
+/// <summary>
+/// Before/after numbers for the resolution page. Values come from running both code paths; <see cref="Partial"/> says the
+/// fix, as it actually ran, didn't fully fix the incident (the page then says so instead of stamping RESOLVED).
+/// </summary>
+public sealed record Outcome(string Before, string BeforeCaption, string After, string AfterCaption, bool Partial = false);
 
 /// <summary>
 /// Closes a lesson: the before and after readings side by side, the change that was made, the recommendation,
@@ -28,15 +31,16 @@ public sealed class ResolutionBeat(Finding finding, Func<Outcome> outcome, strin
         report.Frame(finding.LessonLabel, page);
         var result = measured ??= outcome();
 
-        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel}  ·  Resolution  ·  {finding.Id} {finding.Incident}");
+        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel}  ·  Resolution  ·  {finding.Id}");
         report.Heading(ReportPage.Left, 8, finding.Feature);
         var x = report.PlatformPill(ReportPage.Left, 11, finding.Platform);
         x = report.SeverityPill(x + 1, 11, finding.Severity);
-        if (frame.Reached(1)) report.Pill(x + 1, 11, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
-        else report.Pill(x + 1, 11, "OPEN", Brand.DarkGray);
+        if (!frame.Reached(1)) report.Pill(x + 1, 11, "OPEN", Brand.DarkGray);
+        else if (result.Partial) report.Pill(x + 1, 11, "PARTIAL", Brand.Beige, Brand.Ink);
+        else report.Pill(x + 1, 11, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
 
         Card(canvas, report, new Rectangle(ReportPage.Left, 14, 54, 9), "Before", result.Before, result.BeforeCaption, Brand.Red);
-        Card(canvas, report, new Rectangle(ReportPage.Left + 58, 14, 54, 9), "After", result.After, result.AfterCaption, Brand.Green);
+        Card(canvas, report, new Rectangle(ReportPage.Left + 58, 14, 54, 9), "After", result.After, result.AfterCaption, result.Partial ? Brand.Red : Brand.Green);
 
         report.Kicker(ReportPage.Left, 26, "Change");
         report.Paragraph(ReportPage.Left, 27, 70, change, Brand.Ink);
@@ -50,7 +54,8 @@ public sealed class ResolutionBeat(Finding finding, Func<Outcome> outcome, strin
         if (frame.Reached(1))
         {
             Findings.Resolved.Add(finding.Id);
-            report.Stamp(ReportPage.Left + 80, 31, "RESOLVED", Brand.GreenShade, frame.Since(1));
+            if (result.Partial) Findings.Partial.Add(finding.Id); else Findings.Partial.Remove(finding.Id);
+            report.Stamp(ReportPage.Left + 80, 31, result.Partial ? "PARTIAL" : "RESOLVED", result.Partial ? Brand.Red : Brand.GreenShade, frame.Since(1));
         }
     }
 

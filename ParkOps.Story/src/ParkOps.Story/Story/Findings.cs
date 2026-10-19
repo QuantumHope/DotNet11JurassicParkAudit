@@ -53,5 +53,8 @@ public static class Findings
     /// <summary>Lessons whose resolution page has been shown in this run.</summary>
     public static readonly HashSet<string> Resolved = [];
 
+    /// <summary>Of those, the ones whose fix, run live, only partly fixed the incident.</summary>
+    public static readonly HashSet<string> Partial = [];
+
     public static Finding Get(string id) => All.Single(f => f.Id == id);
 }

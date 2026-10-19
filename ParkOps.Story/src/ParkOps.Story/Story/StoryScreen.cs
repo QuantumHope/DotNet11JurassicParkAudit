@@ -53,8 +53,17 @@ public sealed class StoryScreen : ScreenSurface, IStory
     /// <summary>How many times a finished lesson has handed back to the summary.</summary>
     public int ReturnsToSummary { get; private set; }
 
-    /// <summary>Back on the summary after finishing a lesson: a full pass through the report.</summary>
-    public bool AtEnd => current == 0 && ReturnsToSummary > 0;
+    /// <summary>Whether the current beat has finished any live work it started.</summary>
+    public bool Settled => Beat.Settled;
+
+    /// <summary>Lesson numbers that have pages, in order.</summary>
+    private IEnumerable<int> BuiltLessons => beats.Select(b => b.Chapter.Number).OfType<int>().Distinct().Order();
+
+    /// <summary>Back on the summary after finishing every built lesson (or <see cref="StopAfterLessons"/> of them).</summary>
+    public bool AtEnd => current == 0 && ReturnsToSummary >= (StopAfterLessons ?? BuiltLessons.Count());
+
+    /// <summary>Rehearsal of a single lesson: stop after this many returns to the summary.</summary>
+    public int? StopAfterLessons { get; set; }
 
     /// <summary>A file-name-friendly name for where we are, e.g. "05-INC-002-Fix-2".</summary>
     public string Place => $"{current + 1:00}-{(Chapter.Id is { Length: > 0 } id ? id : "Summary")}-{Beat.Label}-{step + 1}";
@@ -82,7 +91,7 @@ public sealed class StoryScreen : ScreenSurface, IStory
         else if (Chapter.Number is { } lesson)
         {
             ReturnsToSummary++;
-            ToSummary(selectLesson: lesson + 1);
+            ToSummary(selectLesson: BuiltLessons.Where(n => n > lesson).DefaultIfEmpty(lesson + 1).First());
         }
     }
 
@@ -193,28 +202,35 @@ public sealed class StoryScreen : ScreenSurface, IStory
         canvas.Print(3, y, "LEADING", Brand.TrueWhite, Brand.Black);
         canvas.Print(11, y, "EDJE", Brand.Green, Brand.Black);
 
+        // Right: hint and arrows. Middle: one pill per beat. Left: the chapter title, clipped to whatever room is left.
+        var keys = $"{beat.Hint ?? "HOME summary"}   {Glyphs.ArrowLeft} {Glyphs.ArrowRight} ";
+        var pills = chapter.Beats.Select((b, index) =>
+        {
+            var done = chapter.Beats.IndexOf(beat) > index;
+            return (Beat: b, Label: b.Label, Done: done, Width: b.Label.Length + 2 + (b == beat && b.Steps > 1 ? b.Steps + 1 : 0));
+        }).ToList();
+        var pillsWidth = pills.Sum(p => p.Width);
+        if (17 + 12 + pillsWidth + keys.Length > Canvas.Width) keys = $"{Glyphs.ArrowLeft} {Glyphs.ArrowRight} ";
+        var titleWidth = Math.Max(8, Canvas.Width - keys.Length - pillsWidth - 17 - 2);
+
         var x = 17;
-        var title = chapter.Title;
+        var title = Workstation.Clip(chapter.Title, titleWidth);
         canvas.Print(x, y, title, Brand.WhiteShade, Brand.Black);
         x += title.Length + 2;
 
-        foreach (var (index, b) in chapter.Beats.Index())
+        foreach (var pill in pills)
         {
-            var isCurrent = b == beat;
-            var done = chapter.Beats.IndexOf(beat) > index;
-            var (fg, bg) = isCurrent ? (Brand.Black, Brand.Green) : done ? (Brand.Green, Brand.Black) : (Brand.LineNumber, Brand.Black);
-            var label = done ? $"{Glyphs.Check}{b.Label}" : b.Label;
-            canvas.Print(x, y, $" {label} ", fg, bg);
-            x += label.Length + 2;
-            if (isCurrent && b.Steps > 1)
+            var isCurrent = pill.Beat == beat;
+            var (fg, bg) = isCurrent ? (Brand.Black, Brand.Green) : pill.Done ? (Brand.Green, Brand.Black) : (Brand.LineNumber, Brand.Black);
+            canvas.Print(x, y, $" {pill.Label} ", fg, bg);
+            x += pill.Label.Length + 2;
+            if (isCurrent && pill.Beat.Steps > 1)
             {
-                for (var s = 0; s < b.Steps; s++) canvas.Glyph(x + s, y, s <= step ? Cp437.Bullet : Cp437.MiddleDot, s <= step ? Brand.Green : Brand.LineNumber, Brand.Black);
-                x += b.Steps;
+                for (var s = 0; s < pill.Beat.Steps; s++) canvas.Glyph(x + s, y, s <= step ? Cp437.Bullet : Cp437.MiddleDot, s <= step ? Brand.Green : Brand.LineNumber, Brand.Black);
+                x += pill.Beat.Steps + 1;
             }
-            x++;
         }
 
-        var keys = $"{beat.Hint ?? "HOME summary"}   {Glyphs.ArrowLeft} {Glyphs.ArrowRight} ";
         canvas.Print(Canvas.Width - keys.Length, y, keys, Brand.LineNumber, Brand.Black);
     }
 }

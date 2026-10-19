@@ -1,0 +1,16 @@
+# ParkOps.Api with the INC-008 fix applied (PaddockOpenAttribute + [Obsolete]); requests from ParkOps.Api.http sent with curl; .NET 11 RC2, 2026-10-18
+$ curl -i -X POST localhost:5093/tours -H "Content-Type: application/json" -d '{ "guestName": "Lex Murphy", "paddock": "PADDOCK-9" }'
+HTTP/1.1 400 Bad Request
+Content-Type: application/json; charset=utf-8
+
+{"title":"One or more validation errors occurred.","status":400,"errors":{"Paddock":["Paddock 'PADDOCK-9' is closed. Tour denied."]}}
+
+$ curl -i -X POST localhost:5093/tours -H "Content-Type: application/json" -d '{ "guestName": "Tim Murphy", "paddock": "PADDOCK-1" }'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+
+{"guestName":"Tim Murphy","paddock":"PADDOCK-1"}
+
+$ curl localhost:5093/openapi/v1.json   (trimmed: version and /system/override, compacted)
+openapi: 3.2.0
+/system/override: {"post": {"tags": ["Program"], "responses": {"200": {"description": "OK"}}, "deprecated": true}}

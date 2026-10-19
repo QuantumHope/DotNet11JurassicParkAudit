@@ -1,0 +1,15 @@
+# ParkOps.Start with Dinosaur changed from abstract to closed; .NET 11 RC2 SDK, 2026-10-18
+$ dotnet build src/ParkOps.Genetics.Plugin
+  Determining projects to restore...
+  Restored src\ParkOps.Genetics.Plugin\ParkOps.Genetics.Plugin.csproj (in 1 ms).
+  Restored src\ParkOps.Core\ParkOps.Core.csproj (in 0.8 ms).
+  ParkOps.Core -> src\ParkOps.Core\bin\Debug\net11.0\ParkOps.Core.dll
+src\ParkOps.Genetics.Plugin\WuLab.cs(7,15): error CS9382: 'Procompsognathus': cannot use a closed type 'Dinosaur' from another assembly as a base type.
+
+Build FAILED.
+
+src\ParkOps.Genetics.Plugin\WuLab.cs(7,15): error CS9382: 'Procompsognathus': cannot use a closed type 'Dinosaur' from another assembly as a base type.
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.44

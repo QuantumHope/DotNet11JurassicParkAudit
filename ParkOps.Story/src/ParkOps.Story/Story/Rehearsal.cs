@@ -23,7 +23,10 @@ public sealed class Rehearsal(StoryScreen screen, string directory)
         Game.Instance.FrameUpdate += (_, host) =>
         {
             inState += host.UpdateFrameDelta * Speed;
-            if (inState >= Moments[moment]) due = true;
+            // Live work (queries, streams, model calls) runs on the wall clock, not the 4x story clock: hold the last
+            // shot of each step until it settles, for up to 20 real seconds.
+            var waiting = moment == Moments.Length - 1 && !screen.Settled && inState < Moments[moment] + TimeSpan.FromSeconds(20 * Speed);
+            if (inState >= Moments[moment] && !waiting) due = true;
         };
         Game.Instance.FrameRender += (_, _) =>
         {

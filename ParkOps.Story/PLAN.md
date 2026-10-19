@@ -14,8 +14,8 @@ switches which code path is active, so there is nothing to rebuild on stage.
 - **Report first, park second.** Every page is a Leading EDJE report page. Before and after evidence is an
   exhibit inside the page, drawn with the control room's own `Palette`, bevels, chips and typewriter reveal,
   with the report's reading of it in a column alongside.
-- **Can't break on stage.** No live builds, network, or Ollama. Anything that only happens at build time
-  replays a capture.
+- **Can't break on stage.** No live builds and no outside services. Anything that only happens at build time, in
+  a script or in a separate process replays a capture of a real run.
 
 ## Layout
 
@@ -28,8 +28,10 @@ ParkOps.Story/
     Story/                         # engine: StoryScreen (navigation, transitions, story bar), Beat, Chapter, Deck
     Rendering/                     # Canvas (cells + 2x overlay for big type), Brand, ReportPage, Workstation
     Code/                          # SourceFile (embedded source), CSharpTokenizer, LineDiff, CodeView
-    Beats/                         # reusable page types: Summary (home), Finding, Code, Fix, Resolution
-    Chapters/IncNNN/               # one folder per lesson: its "after" code and its exhibit page
+    Beats/                         # page types: Summary (home), Finding, Exhibit (base), Code, Fix, Console, Resolution
+    Chapters/IncNNN/               # one folder per lesson: its "after" code, its exhibit, Captures/*.txt
+  src/ParkOps.Story.Fences.Before/ # lesson 5: Start's MaintenanceWindow.cs, built as Start builds it
+  src/ParkOps.Story.Fences.After/  #           the same file, built with runtime-async=on
 ```
 
 ParkOps.Start stays untouched. The story **links** the files it needs from it: `Palette`, `Cp437`,
@@ -44,7 +46,7 @@ scorecard, and all ten lessons, each headlined by its improvement and platform (
 `EF Core 11`...), with the incident beneath it. `↑`/`↓` picks a lesson and `→`/`Enter` opens it. Finishing a
 lesson returns here with the next one selected, and its status turns to RESOLVED.
 
-## A lesson = six pages
+## A lesson = six pages (or a few more)
 
 | Page | Look | What happens | Steps |
 |---|---|---|---|
@@ -53,7 +55,12 @@ lesson returns here with the next one selected, and its status turns to RESOLVED
 | **Root cause** | Report + code | The *before* source, syntax highlighted, with the bad line flagged | callout on the root cause |
 | **Fix** | Report + code | Animated diff: removed lines go red and collapse, new lines type in | callout explaining the feature |
 | **After** | Report + exhibit | Same exhibit with the *after* code active | the report's reading of what's now visible |
-| **Resolution** | Report | Before/after metrics, change, recommendation, RESOLVED stamp | stamp lands |
+| **Resolution** | Report | Before/after metrics, change, recommendation, RESOLVED (or PARTIAL) stamp | stamp lands |
+
+Fix pages take several files (editor tabs, one per step), including new files and deletions. Where a lesson's moment
+is a build, a script or an HTTP exchange, a **Console** page replays a captured real run (`ConsoleCapture`), and it can
+stand in for a Before/After exhibit (lessons 1 and 8). If a fix, run live, doesn't fully fix its incident, the
+resolution says so and stamps PARTIAL; the summary shows it.
 
 ### Switching the active code path
 
@@ -68,22 +75,38 @@ The beat decides which one runs. **TAB** on an exhibit flips between them live, 
 numbers). `LineDiff` (an LCS over lines) drives the Fix animation. Long lines soft-wrap with a
 continuation glyph.
 
-## How each incident is simulated
+## How each lesson is simulated
 
-| Incident | Feature | Before vs. after | Build-time moment |
-|---|---|---|---|
-| INC-001 | `#:include`, `RunAndCaptureTextAsync` | Terminal beat; the real `git log` runs in-process | none |
-| **INC-002** | **LINQ `FullJoin`** | **Both run live** | none |
-| INC-003 | C# 15 unions | Both run live (union in `Fixed`) | Replay: `Unidentified` exhaustiveness warnings |
-| INC-004 | closed hierarchies | Feeding plan runs live both ways | Replay: plugin build failure |
-| INC-005 | runtime-async | Two tiny assemblies, one built with `runtime-async=on`; real stack traces | none (it's a csproj flag) |
-| INC-006 | extension indexers, labeled `break`, `with(...)` | Both run live | none |
-| INC-007 | EF `MaxByAsync` | Both run live on the same SQLite DB; rows-pulled counter | Replay: migration output |
-| INC-008 | async validation, `[Obsolete]` to OpenAPI | In-process TestServer or a replayed HTTP exchange | none |
-| INC-009 | `SerializeAsyncEnumerable` | Both stream live into a telemetry pane | none |
-| INC-010 | `OrderedFailoverChatClient` | Replayed transcript (no Ollama on stage) | none |
+| Lesson | Before / After | Captured from a real run |
+|---|---|---|
+| 1 File-based apps | Console pages: both `diag.cs` versions run from ParkOps.Start in this repo | both runs |
+| 2 LINQ FullJoin | Exhibit, both run live | |
+| 3 Unions | Exhibit, both run live (union in `Fixed.Inc003`) | `Unidentified` added to the union: CS8509 |
+| 4 Closed hierarchies | Exhibit, both run live (closed hierarchy in `Fixed.Inc004`) | the plugin build: CS9382 |
+| 5 Runtime async | Exhibit: two assemblies from the same `MaintenanceWindow.cs` (extern aliases) | |
+| 6 Labeled break, extension indexers, with(...) | Exhibit, both run live, with the scan replayed on a grid | |
+| 7 MaxByAsync | Exhibit, both query the same seeded SQLite DB next to the exe | `database update --add` (fails on RC2) |
+| 8 Async validation + OpenAPI 3.2 | Console pages: the real API answering ParkOps.Api.http's requests | both runs |
+| 9 JSON unions + SerializeAsyncEnumerable | Exhibit, both stream live, timestamped | |
+| 10 Failover chat client | Exhibit: real MEAI `OrderedFailoverChatClient`; primary is a real Ollama client for "dennis-nedry"; backup is a real model if Ollama is up, else a labelled stand-in | |
 
-Replays live as text files under `Chapters/IncNNN/Captures/` and are captured from real builds, never made up.
+Captures live in `Chapters/IncNNN/Captures/*.txt`: real runs on .NET 11 RC2, with paths made repo-relative and
+anything trimmed marked as trimmed.
+
+### What building it found (Changes.md vs. RC2), and what changed
+
+- **INC-005:** `FenceController` captured its stack *after* `await Task.Delay`, so the caller was never on it and the
+  audit said "unknown" with or without runtime async. ParkOps.Start now captures before the first await, and the caller
+  search skips compiler-generated types: "unknown" (state machines) before, `WhteRbt.ExecuteAsync` with
+  `runtime-async=on`. If a change brings back "unknown" after the fix, lesson 5 stamps itself PARTIAL.
+- **INC-007:** `dotnet ef database update --add` scaffolds a migration that recreates every table, so applying it
+  fails. Changes.md now uses `dotnet ef migrations add` + `dotnet ef database update` (verified: adds `Voltage`).
+- **INC-008:** `AsyncValidationAttribute` also requires the synchronous `IsValid` override; Changes.md now includes
+  it. Mapping the `[Obsolete]` method raises CS0618, as expected.
+- **INC-009:** `SerializeAsyncEnumerable` writes one streamed JSON array; Changes.md now passes `topLevelValues: true`
+  for JSON Lines.
+- Confirmed as written: unions, closed, extension indexers, labeled break, `with(...)`, `RunAndCaptureTextAsync`,
+  `#:include`, `FullJoin`, `MaxByAsync`, `OrderedFailoverChatClient`, OpenAPI `deprecated`.
 
 ## Branding (from leadingedje.com `--le-theme-*`)
 
@@ -109,11 +132,9 @@ Going back lands on the previous page's final state, with no animation.
 
 ## Milestones
 
-1. **Engine + lesson 2 (LINQ FullJoin) end to end**: executive summary hub, six lesson pages, exhibits.
-2. Shared drawing: move `Bevel`/`Screen`/`Chip`/`Button` out of `ControlRoomScreen` into a reusable
+1. ~~Engine + lesson 2 end to end~~ (done)
+2. ~~All ten lessons~~ (done)
+3. Shared drawing: move `Bevel`/`Screen`/`Chip`/`Button` out of `ControlRoomScreen` into a reusable
    `Workstation` in ParkOps.Start so the story stops duplicating it.
-3. Runtime-only incidents: INC-006, INC-009, INC-007.
-4. Compile-time incidents with replays: INC-003, INC-004, INC-005.
-5. Outside-the-control-room incidents: INC-001 (terminal), INC-008 (API), INC-010 (narrator).
-6. Presenter extras: speaker-notes window on a second monitor, a timer against the `Slot` times
+4. Presenter extras: speaker-notes window on a second monitor, a timer against the `Slot` times
    in `DemoScript`.

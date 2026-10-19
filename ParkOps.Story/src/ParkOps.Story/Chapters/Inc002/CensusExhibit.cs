@@ -1,179 +1,78 @@
 using ParkOps.ControlRoom.Ui;
+using ParkOps.Story.Beats;
 using ParkOps.Core.Animals;
 using ParkOps.Core.Sensors;
 using ParkOps.Story.Rendering;
 using ParkOps.Story.Story;
-using SadConsole;
 using SadRogue.Primitives;
 
 namespace ParkOps.Story.Chapters.Inc002;
 
-public enum CodePath { Before, After }
-
 /// <summary>
-/// A report page whose exhibit is the control room's F2 ANIMALS screen, running live on whichever CensusPanel is
-/// active: ParkOps.Start's (inner Join) or the fixed one (FullJoin). RECOUNT plays on entry; the next step adds the
-/// report's reading of the exhibit and marks the lines it refers to. TAB flips the code path and re-runs it.
+/// Exhibit for lesson 2: the control room's F2 ANIMALS screen, its census computed live by ParkOps.Start's
+/// CensusPanel (inner Join) or the fixed one (FullJoin). Entry plays the RECOUNT animation, then the readout types out.
 /// </summary>
-public sealed class CensusExhibit(Finding finding, CodePath initial, Page page) : Beat
+public sealed class CensusExhibit(Finding finding, CodePath initial, Page page) : ExhibitBeat(finding, initial, page)
 {
-    // The exhibit: a control-room screen set into the page, with the report's commentary in a column beside it.
-    private static readonly Rectangle Exhibit = new(ReportPage.Left, 12, 74, 26);
-    private const int ColumnX = 86;
-    private const int ColumnWidth = ReportPage.Right - ColumnX;
     private const int CensusWidth = 47;
-
     private static readonly TimeSpan RecountTime = TimeSpan.FromMilliseconds(2600);
     private static readonly TimeSpan RerunTime = TimeSpan.FromMilliseconds(900);
-    private static readonly Color Highlight = new(28, 52, 24);
 
     private readonly IReadOnlyList<Dinosaur> roster = Census.Roster();
     private readonly IReadOnlyList<TrackedSignal> tracked = SensorNetwork.Sweep();
-
-    private CodePath path;           // set in Enter; TAB flips it
     private Readout census = null!;
-    private TimeSpan? ranAt;          // when the active path last started running (frame clock)
-    private TimeSpan scanTime = RecountTime;
-    private bool rerun;
 
-    public override string Label => initial == CodePath.Before ? "Before" : "After";
+    private TimeSpan ScanTime => Rerunning ? RerunTime : RecountTime;
 
-    public override int Steps => 2;
+    protected override string ScreenName => "CONTROL ROOM // F2 ANIMALS";
 
-    public override string? Hint => $"TAB {(path == CodePath.Before ? "after" : "before")} code";
+    protected override string Heading(CodePath path) =>
+        path == CodePath.Before ? "The census can't come out wrong" : "The census tells the truth";
 
-    private string ExhibitNumber => $"{finding.Lesson}.{(initial == CodePath.Before ? 1 : 2)}";
+    protected override string Caption(CodePath path) =>
+        "Control room, F2 ANIMALS, after RECOUNT. Census computed live by " +
+        (path == CodePath.Before ? "ParkOps.Start's CensusPanel (expected.Join)." : "the fixed CensusPanel (expected.FullJoin).");
 
-    public override void Enter()
+    protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
+        ? ("expected.Join(...)", "ParkOps.Start")
+        : ("expected.FullJoin(...)", "ParkOps.Story.Fixed");
+
+    protected override string Reading(CodePath path)
     {
-        path = initial;
-        census = Census.Render(path, roster, tracked);
-        ranAt = null;
-        scanTime = RecountTime;
+        var located = Census.Located(roster, tracked);
+        return path == CodePath.Before
+            ? $"ParkOps reports {located} of {roster.Count} animals located. The motion grid is tracking {tracked.Count} signals " +
+              $"in the same sweep. The census never asks about the other {tracked.Count - located}, so its light can't turn red."
+            : $"{Census.Unrostered(roster, tracked).Count} signals aren't on the roster: {Census.Describe(roster, tracked)}. " +
+              "The animals are breeding. FullJoin keeps the rows only one side has, so the census can finally say so.";
     }
 
-    public override bool Toggle()
+    protected override void Run(CodePath path) => census = Census.Render(path, roster, tracked);
+
+    protected override bool IsBusy(TimeSpan running) => running < ScanTime;
+
+    protected override ScreenState DrawScreen(Workstation ws, Rectangle inner, ExhibitClock clock)
     {
-        path = path == CodePath.Before ? CodePath.After : CodePath.Before;
-        census = Census.Render(path, roster, tracked);
-        rerun = true;
-        return true;
-    }
-
-    public override void Draw(Frame frame)
-    {
-        if (rerun)
-        {
-            ranAt = frame.Now;
-            scanTime = RerunTime;
-            rerun = false;
-        }
-        var started = ranAt ?? frame.Now - frame.Elapsed;
-        var running = frame.Now - started;
-        var scanning = running < scanTime;
-        var revealFrom = started + scanTime;
-        var typed = frame.Now - revealFrom > Workstation.RevealTime(census);
-
-        var report = new ReportPage(frame.Canvas);
-        report.Frame(finding.LessonLabel, page);
-        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel}  ·  Exhibit {ExhibitNumber}  ·  {(path == CodePath.Before ? "as shipped" : "with the fix")}");
-        report.Heading(ReportPage.Left, 8, path == CodePath.Before ? "The census can't come out wrong" : "The census tells the truth");
-
-        var ws = new Workstation(frame.Canvas, frame.Now);
-        var alertOn = ws.Blink || !typed;
-        var censusArea = DrawExhibit(ws, scanning, running, revealFrom, alertOn, started);
-
-        var source = path == CodePath.Before ? "ParkOps.Start's CensusPanel (expected.Join)" : "the fixed CensusPanel (expected.FullJoin)";
-        report.Paragraph(ReportPage.Left, Exhibit.MaxExtentY + 2, Exhibit.Width,
-            $"Exhibit {ExhibitNumber}. Control room, F2 ANIMALS, after RECOUNT. Census computed live by {source}.", Brand.Muted);
-
-        DrawCodePath(frame, report, frame.Now - started);
-        if (!scanning) Reading(frame, report, censusArea);
-    }
-
-    /// <summary>The control-room screen as a figure: a menu-bar strip with the screen's status, then the CRT itself.</summary>
-    private Rectangle DrawExhibit(Workstation ws, bool scanning, TimeSpan running, TimeSpan revealFrom, bool alertOn, TimeSpan started)
-    {
-        var bar = new Rectangle(Exhibit.X, Exhibit.Y - 1, Exhibit.Width, 1);
-        ws.Print(bar.X, bar.Y, new string(' ', bar.Width), Palette.Ink, Palette.MenuBar);
-        ws.Print(bar.X + 1, bar.Y, $"{Cp437.Menu} INGEN // CONTROL ROOM // F2 ANIMALS", Palette.Ink, Palette.MenuBar);
-        var (badge, color) = scanning ? ("COUNTING", ws.Blink ? Palette.Amber : Palette.AmberDim)
-            : census.Status == PanelStatus.Alert ? ("FAILED", alertOn ? Palette.Bad : Palette.BadDark)
-            : ("CLEAR", Palette.BadgeGood);
-        ws.Print(bar.MaxExtentX - badge.Length - 1, bar.Y, $" {badge} ", Color.White, color);
-
-        var inner = ws.Screen(Exhibit);
         var censusArea = new Rectangle(inner.X + 1, inner.Y, CensusWidth, inner.Height);
-        if (scanning) RecountScan(ws, censusArea, running);
+        var revealFrom = clock.Started + ScanTime;
+        var typed = clock.Now - revealFrom > Workstation.RevealTime(census);
+        var alertOn = ws.Blink || !typed;
+        if (clock.Busy) RecountScan(ws, censusArea, clock.Running);
         else
         {
             ws.Readout(census, "ANIMAL CENSUS", "Roster vs. the animals motion sensors detect", censusArea, revealFrom, alertOn);
             ws.Print(censusArea.X, censusArea.MaxExtentY, $"Last recount {DateTime.Now:HH:mm:ss} - {roster.Count} tags checked", Palette.Dim);
         }
-        SpeciesChart(ws, new Rectangle(inner.X + CensusWidth + 3, inner.Y, inner.Width - CensusWidth - 4, inner.Height), running, scanning);
-        ws.Wipe(inner, started);
-        return censusArea;
-    }
+        SpeciesChart(ws, new Rectangle(inner.X + CensusWidth + 3, inner.Y, inner.Width - CensusWidth - 4, inner.Height), clock.Running, clock.Busy);
 
-    /// <summary>Which CensusPanel the exhibit is running. Both are compiled into this build.</summary>
-    private void DrawCodePath(Frame frame, ReportPage report, TimeSpan sinceRun)
-    {
-        var canvas = frame.Canvas;
-        canvas.Fill(new Rectangle(ColumnX - 2, Exhibit.Y - 1, 1, 9), Brand.Green, Brand.Green);
-        report.Kicker(ColumnX, Exhibit.Y - 1, "Code path running");
-
-        (CodePath Path, string Name, string Code, string From, Color Color)[] options =
-        [
-            (CodePath.Before, "BEFORE", "expected.Join(...)", "ParkOps.Start", Brand.Red),
-            (CodePath.After, "AFTER", "expected.FullJoin(...)", "ParkOps.Story.Fixed", Brand.GreenShade),
-        ];
-        var y = Exhibit.Y + 1;
-        foreach (var option in options)
-        {
-            var active = option.Path == path;
-            var flash = active && sinceRun < TimeSpan.FromMilliseconds(500);
-            report.Pill(ColumnX, y, $"{(active ? Cp437.Play : ' ')} {option.Name,-6}",
-                active ? (flash ? Brand.Green : option.Color) : Brand.Rule, active ? Brand.TrueWhite : Brand.Muted);
-            canvas.Print(ColumnX + 12, y, option.Code, active ? Brand.Ink : Brand.Muted, Brand.Paper);
-            canvas.Print(ColumnX + 12, y + 1, option.From, active ? Brand.DarkGray : Brand.Rule, Brand.Paper);
-            y += 3;
-        }
-        canvas.Print(ColumnX, y, "TAB switches it live. Both versions", Brand.Muted, Brand.Paper);
-        canvas.Print(ColumnX, y + 1, "are compiled in: no rebuild.", Brand.Muted, Brand.Paper);
-    }
-
-    /// <summary>The report's reading of the exhibit, with the readout lines it refers to marked on the screen.</summary>
-    private void Reading(Frame frame, ReportPage report, Rectangle censusArea)
-    {
-        var since = frame.Since(1);
-        if (since < TimeSpan.Zero) return;
-        var canvas = frame.Canvas;
-
-        var located = Census.Located(roster, tracked);
-        var text = path == CodePath.Before
-            ? $"ParkOps reports {located} of {roster.Count} animals located. The motion grid is tracking {tracked.Count} signals " +
-              $"in the same sweep. The census never asks about the other {tracked.Count - located}, so its light can't turn red."
-            : $"{Census.Unrostered(roster, tracked).Count} signals aren't on the roster: {Census.Describe(roster, tracked)}. " +
-              "The animals are breeding. FullJoin keeps the rows only one side has, so the census can finally say so.";
-
-        var fade = Math.Clamp(since.TotalMilliseconds / 300, 0, 1);
-        for (var i = 0; i < census.Lines.Count; i++)
-        {
-            var y = censusArea.Y + 2 + i;
-            for (var x = censusArea.X; x < censusArea.X + CensusWidth; x++)
-                canvas.Surface.SetBackground(x, y, Canvas.Lerp(Palette.Background, Highlight, fade));
-            canvas.Glyph(censusArea.X - 1, y, Cp437.Play, Brand.Green, Palette.Background);
-        }
-
-        var top = Exhibit.Y + 10;
-        report.Rule(top - 1, ColumnX, ReportPage.Right);
-        canvas.Glyph(ColumnX, top + 1, Cp437.Play, Brand.Green, Brand.Paper);
-        report.Kicker(ColumnX + 2, top + 1, "What it shows");
-        report.Paragraph(ColumnX, top + 3, ColumnWidth, text, Brand.Ink, (int)(since.TotalMilliseconds * 0.9));
+        var marks = census.Lines.Select((_, i) => Row(censusArea.X, censusArea.Y + 2 + i, CensusWidth)).ToList();
+        return clock.Busy ? new("COUNTING", ws.Blink ? Palette.Amber : Palette.AmberDim, [])
+            : census.Status == PanelStatus.Alert ? new("FAILED", alertOn ? Palette.Bad : Palette.BadDark, marks)
+            : ScreenState.Clear(marks);
     }
 
     private int ScannedSoFar(TimeSpan elapsed) =>
-        (int)(Math.Clamp(elapsed / (scanTime - TimeSpan.FromMilliseconds(scanTime == RecountTime ? 400 : 150)), 0, 1) * roster.Count);
+        (int)(Math.Clamp(elapsed / (ScanTime - TimeSpan.FromMilliseconds(Rerunning ? 150 : 400)), 0, 1) * roster.Count);
 
     /// <summary>The control room's RECOUNT animation: tag counter, progress bar, scrolling log of tags checked.</summary>
     private void RecountScan(Workstation ws, Rectangle area, TimeSpan elapsed)

@@ -60,6 +60,7 @@ public static class Callout
 
     private static void Leader(Canvas canvas, IReadOnlyList<Point> points, double progress)
     {
+        if (points.Count < 2) return; // no leader: the card stands alone
         List<(Point At, char Glyph)> path = [];
         for (var i = 0; i < points.Count - 1; i++)
         {

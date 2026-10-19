@@ -25,6 +25,9 @@ public abstract class Beat
     /// <summary>TAB: flip the active code path, if this beat has one. Returns whether anything changed.</summary>
     public virtual bool Toggle() => false;
 
+    /// <summary>False while the beat is still waiting on live work (a query, a stream, a model call).</summary>
+    public virtual bool Settled => true;
+
     /// <summary>A key the beat handles itself (before NEXT/BACK see it). Returns whether it was used.</summary>
     public virtual bool HandleKey(Keys key, IStory story) => false;
 

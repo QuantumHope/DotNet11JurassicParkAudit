@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" />
+    <PackageReference Include="SadConsole.Host.MonoGame" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ParkOps.Core\ParkOps.Core.csproj" />
+    <ProjectReference Include="..\ParkOps.Genetics.Plugin\ParkOps.Genetics.Plugin.csproj" />
+    <ProjectReference Include="..\ParkOps.Data\ParkOps.Data.csproj" />
+  </ItemGroup>
+</Project>

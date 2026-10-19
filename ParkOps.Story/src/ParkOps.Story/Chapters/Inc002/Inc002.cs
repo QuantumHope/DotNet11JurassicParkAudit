@@ -22,7 +22,7 @@ public static class Inc002
         var located = Census.Located(roster, tracked);
         var missing = Census.Unrostered(roster, tracked).Count;
 
-        var title = $"{finding.LessonLabel}  ·  {finding.Feature}";
+        var title = finding.LessonLabel;
         return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
             new FindingBeat(finding, "Animal census  (F2 ANIMALS)", Path,

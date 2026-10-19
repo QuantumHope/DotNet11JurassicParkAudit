@@ -18,15 +18,27 @@ public static class CodeView
     private const int GutterWidth = 7;
 
     /// <summary>Draws the pane's chrome and returns the area code goes in.</summary>
-    public static Rectangle Window(Canvas canvas, Rectangle area, SourceFile file, string badge, Color badgeColor)
+    public static Rectangle Window(Canvas canvas, Rectangle area, SourceFile file, string badge, Color badgeColor) =>
+        Window(canvas, area, [file.Name], 0, file.Path, badge, badgeColor);
+
+    /// <summary>The pane with one tab per file (a multi-file fix); <paramref name="active"/> is the one shown.</summary>
+    public static Rectangle Window(Canvas canvas, Rectangle area, IReadOnlyList<string> tabs, int active, string path, string badge, Color badgeColor)
     {
         canvas.Fill(new Rectangle(area.X + 1, area.MaxExtentY + 1, area.Width, 1), Brand.Black, Brand.DarkGray, Cp437.LightShade);
         canvas.Fill(area, Brand.CodeText, Brand.CodeBackground);
         canvas.Fill(new Rectangle(area.X, area.Y, area.Width, 1), Brand.WhiteShade, Brand.Black);
 
-        canvas.Glyph(area.X, area.Y, Glyphs.BlockLeft, Brand.Green, Brand.CodeBackground);
-        canvas.Print(area.X + 1, area.Y, $" {file.Name} ", Brand.TrueWhite, Brand.CodeBackground);
-        canvas.Print(area.X + file.Name.Length + 4, area.Y, file.Path, Brand.LineNumber, Brand.Black);
+        var x = area.X;
+        foreach (var (index, tab) in tabs.Index())
+        {
+            var isActive = index == active;
+            var background = isActive ? Brand.CodeBackground : Brand.Black;
+            canvas.Glyph(x, area.Y, isActive ? Glyphs.BlockLeft : ' ', Brand.Green, background);
+            var label = index < active ? $" {Glyphs.Check}{tab} " : $" {tab} ";
+            canvas.Print(x + 1, area.Y, label, isActive ? Brand.TrueWhite : index < active ? Brand.GreenShade : Brand.LineNumber, background);
+            x += label.Length + 2;
+        }
+        canvas.Print(x + 1, area.Y, Workstation.Clip(path, Math.Max(0, area.MaxExtentX - x - badge.Length - 4)), Brand.LineNumber, Brand.Black);
 
         var pill = $" {badge} ";
         canvas.Print(area.MaxExtentX - pill.Length, area.Y, pill, Brand.TrueWhite, badgeColor);
@@ -111,6 +123,15 @@ public static class CodeView
     {
         var lane = codeArea.X + GutterWidth - 2;
         return [new(box.X - 1, box.Y + 1), new(lane, box.Y + 1), new(lane, row), new(lane + 1, row)];
+    }
+
+    /// <summary>The leader a note asks for, to source row <paramref name="row"/> whose text is <paramref name="text"/>.</summary>
+    public static Point[] Leader(Rectangle codeArea, Beats.CodeNote note, int row, string text)
+    {
+        if (note.Leader == Beats.NoteLeader.Gutter) return GutterLeader(codeArea, note.Box, row);
+        var codeX = codeArea.X + GutterWidth + 1;
+        var end = codeX + Math.Min(text.Length, codeArea.MaxExtentX - codeX) + 1;
+        return [new(note.Box.X - 1, row), new(end, row)];
     }
 
     public static Color ColorFor(TokenKind kind) => kind switch

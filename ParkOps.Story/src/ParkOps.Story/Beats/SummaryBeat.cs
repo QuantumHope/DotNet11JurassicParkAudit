@@ -17,7 +17,7 @@ public sealed class SummaryBeat(Page page) : Beat
     private static readonly TimeSpan RowTime = TimeSpan.FromMilliseconds(60);
     private static readonly Color Selected = new(232, 242, 214);
 
-    private int selected = 1;                 // index into Findings.All; INC-002 is the first lesson built
+    private int selected;                     // index into Findings.All: lesson 1 first
     private (string Text, TimeSpan At)? notice;
     private TimeSpan now;
 
@@ -65,7 +65,7 @@ public sealed class SummaryBeat(Page page) : Beat
 
         // Scorecard.
         const int scoreX = 92;
-        var resolved = Findings.All.Count(f => Findings.Resolved.Contains(f.Id));
+        var resolved = Findings.All.Count(f => Findings.Resolved.Contains(f.Id) && !Findings.Partial.Contains(f.Id));
         canvas.Fill(new Rectangle(scoreX - 2, 6, 1, 8), Brand.Green, Brand.Green);
         report.Kicker(scoreX, 6, "Lessons resolved");
         report.Heading(scoreX, 8, $"{resolved} / {Findings.All.Length}", resolved > 0 ? Brand.DarkGreen : Brand.Ink);
@@ -97,7 +97,8 @@ public sealed class SummaryBeat(Page page) : Beat
             canvas.Print(columns[2], y, Workstation.Clip(lesson.Feature, columns[3] - columns[2] - 2), Brand.Ink, paper);
             canvas.Print(columns[2], y + 1, Workstation.Clip($"{lesson.Id}  {lesson.Incident}: {lesson.Summary}", ReportPage.Right - columns[2] - 1), Brand.Muted, paper);
             report.SeverityPill(columns[3], y, lesson.Severity);
-            if (done) report.Pill(columns[4], y, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
+            if (done && Findings.Partial.Contains(lesson.Id)) report.Pill(columns[4], y, "PARTIAL", Brand.Beige, Brand.Ink);
+            else if (done) report.Pill(columns[4], y, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
             else if (BuiltLessons.Contains(lesson.Lesson)) canvas.Print(columns[4] + 1, y, "OPEN", Brand.Ink, paper);
             else canvas.Print(columns[4] + 1, y, "IN PREP", Brand.Muted, paper);
             y += 2;
