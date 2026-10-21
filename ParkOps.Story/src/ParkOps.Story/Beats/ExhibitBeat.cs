@@ -21,7 +21,7 @@ public sealed record ExhibitClock(TimeSpan Now, TimeSpan Started, bool Busy, boo
 }
 
 /// <summary>
-/// A report page whose exhibit is a park screen running live on whichever code path is active: the code ParkOps.Start
+/// A report page whose exhibit is a park screen running live on whichever code path is active: the original code
 /// shipped, or the fixed code in ParkOps.Story.Fixed. Both are compiled in. On entry the exhibit runs; the next step adds
 /// the report's reading and marks what it refers to. TAB flips the code path and runs it again.
 /// Subclasses supply the screen, its wording, and how to run each path.

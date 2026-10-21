@@ -2,7 +2,7 @@ using ParkOps.ControlRoom.Ui;
 
 namespace ParkOps.Story.Fixed.Inc003;
 
-/// <summary>ParkOps.Start's MotionPanel, unchanged, compiled against the fixed sensor types. Not shown on screen.</summary>
+/// <summary>The original MotionPanel, unchanged, compiled against the fixed sensor types. Not shown on screen.</summary>
 public static class MotionPanel
 {
     public static Readout Render(IReadOnlyList<SensorPing> pings)

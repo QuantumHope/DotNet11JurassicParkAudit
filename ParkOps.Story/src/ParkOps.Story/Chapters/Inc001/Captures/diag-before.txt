@@ -1,4 +1,4 @@
-# ParkOps.Start's scripts/diag.cs, run from ParkOps.Start in this repo; .NET 11 RC2 SDK, 2026-10-18
+# the original scripts/diag.cs, run in this repo; .NET 11 RC2 SDK, 2026-10-18
 $ dotnet run scripts/diag.cs
 ──────────────────────── PARK OPS // SYSTEM DIAGNOSTIC ─────────────────────────
 bd9ee75  Matthew-Hope Eland  Make ParkOps.Story report-first: executive summary

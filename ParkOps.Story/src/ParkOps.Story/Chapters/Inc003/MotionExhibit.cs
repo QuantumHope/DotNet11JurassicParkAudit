@@ -10,7 +10,7 @@ using Union = ParkOps.Story.Fixed.Inc003;
 namespace ParkOps.Story.Chapters.Inc003;
 
 /// <summary>
-/// Exhibit for lesson 3: F3 SECURITY's motion sensors, assessed by ParkOps.Start's ThreatAssessor (a wrapper hierarchy
+/// Exhibit for lesson 3: F3 SECURITY's motion sensors, assessed by the original ThreatAssessor (a wrapper hierarchy
 /// with a discard arm) or the fixed one (a union, switched exhaustively). Below the readout, each sensor's raw contact
 /// sits beside what ParkOps made of it, so the sweep shows the sensor knew all along.
 /// </summary>
@@ -26,10 +26,10 @@ public sealed class MotionExhibit(Finding finding, CodePath initial, Page page) 
 
     protected override string Caption(CodePath path) =>
         "Control room, F3 SECURITY, SWEEP SENSORS. Threats assessed live by " +
-        (path == CodePath.Before ? "ParkOps.Start's ThreatAssessor (wrapper records)." : "the fixed ThreatAssessor (a union).");
+        (path == CodePath.Before ? "the original ThreatAssessor (wrapper records)." : "the fixed ThreatAssessor (a union).");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("_ => \"GUEST detected\"", "ParkOps.Start")
+        ? ("_ => \"GUEST detected\"", "ParkOps (original)")
         : ("union MotionContact", "ParkOps.Story.Fixed");
 
     protected override string Reading(CodePath path) => path == CodePath.Before

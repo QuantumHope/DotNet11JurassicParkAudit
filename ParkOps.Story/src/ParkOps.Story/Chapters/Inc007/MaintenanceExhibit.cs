@@ -10,7 +10,7 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Chapters.Inc007;
 
 /// <summary>
-/// Exhibit for lesson 7: F4 OPERATIONS' maintenance panel, querying the park database live through ParkOps.Start's
+/// Exhibit for lesson 7: F4 OPERATIONS' maintenance panel, querying the park database live through the original
 /// MaintenancePanel (Include + ToListAsync + MaxBy in memory) or the fixed one (MaxByAsync, translated to SQL). Beside it,
 /// breaches per fence; under it, a gauge of the rows each version pulled into memory.
 /// </summary>
@@ -30,10 +30,10 @@ public sealed partial class MaintenanceExhibit(Finding finding, CodePath initial
 
     protected override string Caption(CodePath path) =>
         "Control room, F4 OPERATIONS, FIND REPAIR, on the seeded park database. Query run live by " +
-        (path == CodePath.Before ? "ParkOps.Start's MaintenancePanel." : "the fixed MaintenancePanel.");
+        (path == CodePath.Before ? "the original MaintenancePanel." : "the fixed MaintenancePanel.");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("Include + ToList + MaxBy", "ParkOps.Start")
+        ? ("Include + ToList + MaxBy", "ParkOps (original)")
         : ("MaxByAsync(...)", "ParkOps.Story.Fixed");
 
     protected override string Reading(CodePath path)

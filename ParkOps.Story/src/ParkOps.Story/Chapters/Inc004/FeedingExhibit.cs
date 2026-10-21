@@ -9,7 +9,7 @@ using Closed = ParkOps.Story.Fixed.Inc004;
 namespace ParkOps.Story.Chapters.Inc004;
 
 /// <summary>
-/// Exhibit for lesson 4: F2 ANIMALS' feeding plan, built by ParkOps.Start's FeedingPlanner over an open hierarchy (with
+/// Exhibit for lesson 4: F2 ANIMALS' feeding plan, built by the original FeedingPlanner over an open hierarchy (with
 /// the genetics lab's own Procompsognathus) or the fixed one over a closed hierarchy. Beside it, each species' own
 /// IsCarnivore, because the open version's sanity check passes: the lab's species says it isn't one.
 /// </summary>
@@ -26,10 +26,10 @@ public sealed class FeedingExhibit(Finding finding, CodePath initial, Page page)
 
     protected override string Caption(CodePath path) =>
         "Control room, F2 ANIMALS, FEEDING PLAN. Diets assigned live by " +
-        (path == CodePath.Before ? "ParkOps.Start's FeedingPlanner (open hierarchy)." : "the fixed FeedingPlanner (closed hierarchy).");
+        (path == CodePath.Before ? "the original FeedingPlanner (open hierarchy)." : "the fixed FeedingPlanner (closed hierarchy).");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("abstract record + _ arm", "ParkOps.Start")
+        ? ("abstract record + _ arm", "ParkOps (original)")
         : ("closed record", "ParkOps.Story.Fixed");
 
     protected override string Reading(CodePath path) => path == CodePath.Before

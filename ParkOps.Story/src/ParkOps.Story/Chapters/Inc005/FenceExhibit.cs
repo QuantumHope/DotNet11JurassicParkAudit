@@ -15,7 +15,7 @@ namespace ParkOps.Story.Chapters.Inc005;
 public sealed record FenceAudit(bool PowerOn, string? DisabledBy, IReadOnlyList<string> Stack);
 
 /// <summary>
-/// Runs ParkOps.Start's maintenance routine, unchanged, from the assembly compiled the way ParkOps.Start compiles it, or
+/// Runs the original maintenance routine, unchanged, from the assembly compiled as originally built, or
 /// from the one compiled with runtime-async=on, and returns what the fence controller's audit captured.
 /// </summary>
 public static class FenceRuns
@@ -51,10 +51,10 @@ public sealed class FenceExhibit(Finding finding, CodePath initial, Page page) :
 
     protected override string Caption(CodePath path) =>
         "FENCE STATUS after startup maintenance. MaintenanceWindow.cs, unchanged, built " +
-        (path == CodePath.Before ? "as ParkOps.Start builds it." : "with runtime-async=on.");
+        (path == CodePath.Before ? "as originally built." : "with runtime-async=on.");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("async state machines", "ParkOps.Start's build")
+        ? ("async state machines", "original build")
         : ("runtime-async=on", "one csproj line");
 
     protected override string Reading(CodePath path)

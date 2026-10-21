@@ -7,7 +7,7 @@ namespace ParkOps.Story.Chapters.Inc005;
 
 /// <summary>
 /// Lesson 5, runtime async. Incident INC-005, "Who turned off the fences?": the fence audit walks the live stack for its
-/// caller and finds only async state-machine plumbing. Both versions run ParkOps.Start's MaintenanceWindow.cs unchanged;
+/// caller and finds only async state-machine plumbing. Both versions run the original MaintenanceWindow.cs unchanged;
 /// the only difference is the compiler switch. Whatever the audit actually captures is what this lesson reports (and it
 /// marks itself PARTIAL if the fixed build still can't name the caller).
 /// </summary>

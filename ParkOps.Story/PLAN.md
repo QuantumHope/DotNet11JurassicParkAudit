@@ -21,8 +21,9 @@ switches which code path is active, so there is nothing to rebuild on stage.
 
 ```
 ParkOps.Story/
-  global.json, Directory.*.props   # pin the same SDK and package versions as ParkOps.Start (imports)
+  global.json, Directory.*.props   # .NET 11 RC2 SDK, net11.0 / C# 15, central package versions
   ParkOps.Story.slnx
+  src/Before/                      # the park's original code, every incident in place (see its README)
   src/ParkOps.Story/
     Program.cs                     # SadConsole host, 128x44 cells, same font as the control room
     Story/                         # engine: StoryScreen (navigation, transitions, story bar), Beat, Chapter, Deck
@@ -30,12 +31,14 @@ ParkOps.Story/
     Code/                          # SourceFile (embedded source), CSharpTokenizer, LineDiff, CodeView
     Beats/                         # page types: Summary (home), Finding, Exhibit (base), Code, Fix, Console, Resolution
     Chapters/IncNNN/               # one folder per lesson: its "after" code, its exhibit, Captures/*.txt
-  src/ParkOps.Story.Fences.Before/ # lesson 5: Start's MaintenanceWindow.cs, built as Start builds it
+  src/ParkOps.Story.Fences.Before/ # lesson 5: the original MaintenanceWindow.cs, built as originally built
   src/ParkOps.Story.Fences.After/  #           the same file, built with runtime-async=on
 ```
 
-ParkOps.Start stays untouched. The story **links** the files it needs from it: `Palette`, `Cp437`,
-`Readout`, and each incident's *before* source (for example `Panels/CensusPanel.cs`). The *after* version
+The story is the only app. The park's original code lives in `src/Before`: the story references its Core, Data and
+Genetics.Plugin projects and **links** the control-room files it needs (`Palette`, `Cp437`, `Readout`, and each
+incident's *before* source, for example `Panels/CensusPanel.cs`). Treat `src/Before` as the "as found" evidence:
+change it only to stage an incident. The *after* version
 of each file lives in `Chapters/IncNNN/` under a `ParkOps.Story.Fixed` namespace, so both compile into
 one assembly side by side.
 
@@ -79,7 +82,7 @@ continuation glyph.
 
 | Lesson | Before / After | Captured from a real run |
 |---|---|---|
-| 1 File-based apps | Console pages: both `diag.cs` versions run from ParkOps.Start in this repo | both runs |
+| 1 File-based apps | Console pages: both `diag.cs` versions run in this repo | both runs |
 | 2 LINQ FullJoin | Exhibit, both run live | |
 | 3 Unions | Exhibit, both run live (union in `Fixed.Inc003`) | `Unidentified` added to the union: CS8509 |
 | 4 Closed hierarchies | Exhibit, both run live (closed hierarchy in `Fixed.Inc004`) | the plugin build: CS9382 |
@@ -93,18 +96,17 @@ continuation glyph.
 Captures live in `Chapters/IncNNN/Captures/*.txt`: real runs on .NET 11 RC2, with paths made repo-relative and
 anything trimmed marked as trimmed.
 
-### What building it found (Changes.md vs. RC2), and what changed
+### What building it found on RC2
 
 - **INC-005:** `FenceController` captured its stack *after* `await Task.Delay`, so the caller was never on it and the
-  audit said "unknown" with or without runtime async. ParkOps.Start now captures before the first await, and the caller
-  search skips compiler-generated types: "unknown" (state machines) before, `WhteRbt.ExecuteAsync` with
+  audit said "unknown" with or without runtime async. The original code now captures before the first await, and the
+  caller search skips compiler-generated types: "unknown" (state machines) before, `WhteRbt.ExecuteAsync` with
   `runtime-async=on`. If a change brings back "unknown" after the fix, lesson 5 stamps itself PARTIAL.
 - **INC-007:** `dotnet ef database update --add` scaffolds a migration that recreates every table, so applying it
-  fails. Changes.md now uses `dotnet ef migrations add` + `dotnet ef database update` (verified: adds `Voltage`).
-- **INC-008:** `AsyncValidationAttribute` also requires the synchronous `IsValid` override; Changes.md now includes
-  it. Mapping the `[Obsolete]` method raises CS0618, as expected.
-- **INC-009:** `SerializeAsyncEnumerable` writes one streamed JSON array; Changes.md now passes `topLevelValues: true`
-  for JSON Lines.
+  fails. The fix is `dotnet ef migrations add` + `dotnet ef database update` (verified: adds `Voltage`).
+- **INC-008:** `AsyncValidationAttribute` also requires the synchronous `IsValid` override. Mapping the `[Obsolete]`
+  method raises CS0618, as expected.
+- **INC-009:** `SerializeAsyncEnumerable` writes one streamed JSON array; `topLevelValues: true` gives JSON Lines.
 - Confirmed as written: unions, closed, extension indexers, labeled break, `with(...)`, `RunAndCaptureTextAsync`,
   `#:include`, `FullJoin`, `MaxByAsync`, `OrderedFailoverChatClient`, OpenAPI `deprecated`.
 
@@ -134,7 +136,6 @@ Going back lands on the previous page's final state, with no animation.
 
 1. ~~Engine + lesson 2 end to end~~ (done)
 2. ~~All ten lessons~~ (done)
-3. Shared drawing: move `Bevel`/`Screen`/`Chip`/`Button` out of `ControlRoomScreen` into a reusable
-   `Workstation` in ParkOps.Start so the story stops duplicating it.
-4. Presenter extras: speaker-notes window on a second monitor, a timer against the `Slot` times
-   in `DemoScript`.
+3. ~~One app: fold the original code into `src/Before` and retire the standalone control room~~ (done;
+   `Rendering/Workstation` is now the only copy of the control-room look)
+4. Presenter extras: speaker-notes window on a second monitor, a timer against each lesson's slot in the talk.

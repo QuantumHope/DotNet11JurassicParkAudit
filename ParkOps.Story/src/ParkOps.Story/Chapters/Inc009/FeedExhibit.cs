@@ -9,7 +9,7 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Chapters.Inc009;
 
 /// <summary>
-/// Exhibit for lesson 9: F4 OPERATIONS' raw telemetry, streamed live by ParkOps.Start's FeedCommand (a custom converter
+/// Exhibit for lesson 9: F4 OPERATIONS' raw telemetry, streamed live by the original FeedCommand (a custom converter
 /// and one buffered array) or the fixed one (union serialization, one JSON line per contact). Each line is stamped
 /// with when it actually arrived, so buffering versus streaming shows up as time.
 /// </summary>
@@ -26,10 +26,10 @@ public sealed class FeedExhibit(Finding finding, CodePath initial, Page page) : 
 
     protected override string Caption(CodePath path) =>
         "Control room, F4 OPERATIONS, STREAM FEED. Telemetry streamed live by " +
-        (path == CodePath.Before ? "ParkOps.Start's FeedCommand and its hand-written converter." : "the fixed FeedCommand: unions serialize natively.");
+        (path == CodePath.Before ? "the original FeedCommand and its hand-written converter." : "the fixed FeedCommand: unions serialize natively.");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("SerializeAsync(batch)", "ParkOps.Start")
+        ? ("SerializeAsync(batch)", "ParkOps (original)")
         : ("topLevelValues: true", "ParkOps.Story.Fixed");
 
     protected override string Reading(CodePath path)

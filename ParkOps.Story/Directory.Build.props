@@ -1,4 +1,9 @@
 <Project>
-  <!-- Same SDK settings as the talk's code, so the story compiles what the talk compiles. -->
-  <Import Project="..\ParkOps.Start\Directory.Build.props" />
+  <!-- One set of settings for the story and the original ParkOps code it runs (src/Before). -->
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>15</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 </Project>

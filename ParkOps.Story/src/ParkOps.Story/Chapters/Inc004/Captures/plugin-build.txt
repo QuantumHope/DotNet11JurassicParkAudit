@@ -1,4 +1,4 @@
-# ParkOps.Start with Dinosaur changed from abstract to closed; .NET 11 RC2 SDK, 2026-10-18
+# the original ParkOps code with Dinosaur changed from abstract to closed; .NET 11 RC2 SDK, 2026-10-18
 $ dotnet build src/ParkOps.Genetics.Plugin
   Determining projects to restore...
   Restored src\ParkOps.Genetics.Plugin\ParkOps.Genetics.Plugin.csproj (in 1 ms).

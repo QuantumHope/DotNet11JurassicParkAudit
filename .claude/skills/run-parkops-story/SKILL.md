@@ -1,6 +1,6 @@
 ---
 name: run-parkops-story
-description: Build, launch and drive ParkOps.Story (the Leading EDJE report app, a SadConsole/MonoGame window) on Windows - press real keys in it and screenshot the window, or run its unattended --capture rehearsal. Use to run the story app, check a lesson or page visually, or confirm a change works in the real window. Also works for the ParkOps.Start control room.
+description: Build, launch and drive ParkOps.Story (the Leading EDJE report app, a SadConsole/MonoGame window) on Windows - press real keys in it and screenshot the window, or run its unattended --capture rehearsal. Use to run the story app, check a lesson or page visually, or confirm a change works in the real window. ParkOps.Story is the repo's only app.
 ---
 
 # Run ParkOps.Story
@@ -68,13 +68,8 @@ Summary: `up`/`down` pick a lesson (lesson 1 is selected at start), `enter` or `
 `tab` flips before/after code on an exhibit, `home` summary, `r` replay the page, `1`-`9`, `0` open a lesson,
 `esc` quit. Finishing a lesson's last page returns to the summary with the next lesson selected.
 
-## The control room (ParkOps.Start)
+## Where the code is
 
-The same script drives the original app:
-
-```powershell
-dotnet build ParkOps.Start/src/ParkOps.ControlRoom
-... drive.ps1 -Exe ParkOps.Start/src/ParkOps.ControlRoom/bin/Debug/net11.0/ParkOps.ControlRoom.exe -AppArgs '--quick' -Steps 'wait:3 f2 wait:1 shot:animals esc'
-```
-
-`--quick` skips the boot screen. It uses `ParkOps.Start/parkops.db` (next to `ParkOps.slnx`); delete it to reseed.
+The *before* side of every exhibit is the park's original code in `ParkOps.Story/src/Before` (see its README); the
+*after* side is in `ParkOps.Story/src/ParkOps.Story/Chapters/IncNNN/`. There's no standalone control-room app any
+more: the story draws the control room itself (`Rendering/Workstation.cs`).

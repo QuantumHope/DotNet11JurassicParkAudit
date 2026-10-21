@@ -11,7 +11,7 @@ int? lesson = int.TryParse(Option("--lesson"), out var n) ? n : null;
 var capture = Option("--capture") is { } directory ? Path.GetFullPath(directory) : null;
 
 // The park database lives next to the exe (ParkDb falls back to the working directory when it can't find
-// ParkOps.slnx), so ParkOps.Start's code and the fixed code query the same seeded data.
+// ParkOps.slnx), so the original code and the fixed code query the same seeded data.
 Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 using (var db = ParkDb.Create()) ParkDb.Prepare(db);
 

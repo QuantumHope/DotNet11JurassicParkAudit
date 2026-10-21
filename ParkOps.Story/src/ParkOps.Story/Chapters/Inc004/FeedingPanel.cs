@@ -2,7 +2,7 @@ using ParkOps.ControlRoom.Ui;
 
 namespace ParkOps.Story.Fixed.Inc004;
 
-/// <summary>ParkOps.Start's FeedingPanel, unchanged, compiled against the closed hierarchy. Not shown on screen.</summary>
+/// <summary>The original FeedingPanel, unchanged, compiled against the closed hierarchy. Not shown on screen.</summary>
 public static class FeedingPanel
 {
     public static Readout Render(IReadOnlyList<Dinosaur> roster)

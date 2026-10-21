@@ -8,7 +8,7 @@ namespace ParkOps.Story.Chapters.Inc001;
 /// <summary>
 /// Lesson 1, file-based apps: #:include + Process.RunAndCaptureTextAsync. Incident INC-001, "Who touched the system?":
 /// the diagnostics script is one file of process plumbing only dnedry understood. Before and after are captures of
-/// both scripts really running, from ParkOps.Start in this repo; the output is the same, the script isn't.
+/// both scripts really running, from the original code in this repo; the output is the same, the script isn't.
 /// </summary>
 public static class Inc001
 {

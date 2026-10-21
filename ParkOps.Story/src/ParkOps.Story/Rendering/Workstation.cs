@@ -7,7 +7,7 @@ namespace ParkOps.Story.Rendering;
 
 /// <summary>
 /// The control room's drawing vocabulary (bevels, CRT screens, chips, buttons, the LEVEL caption, typewriter
-/// readouts), ported from ParkOps.Start's ControlRoomScreen so simulated screens match the real one.
+/// readouts), ported from the original control room app so the exhibits look like it.
 /// Every animation is a function of <paramref name="now"/>, as in the original.
 /// </summary>
 public sealed class Workstation(Canvas canvas, TimeSpan now)
@@ -16,7 +16,7 @@ public sealed class Workstation(Canvas canvas, TimeSpan now)
     public static readonly TimeSpan WipeTime = TimeSpan.FromMilliseconds(280);
 
     public static readonly (string Key, string Name)[] Tabs =
-        [("F1", "OVERVIEW"), ("F2", "ANIMALS"), ("F3", "SECURITY"), ("F4", "OPERATIONS"), ("F5", "TASKS")];
+        [("F1", "OVERVIEW"), ("F2", "ANIMALS"), ("F3", "SECURITY"), ("F4", "OPERATIONS")];
 
     public bool Blink => now.TotalMilliseconds % 900 < 500;
 

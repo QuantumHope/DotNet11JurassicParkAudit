@@ -10,7 +10,7 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Chapters.Inc006;
 
 /// <summary>
-/// Exhibit for lesson 6: F3 SECURITY's guest locator, run by ParkOps.Start's GuestLocatorPanel or the fixed one, beside
+/// Exhibit for lesson 6: F3 SECURITY's guest locator, run by the original GuestLocatorPanel or the fixed one, beside
 /// the paddock grid it searches. The grid replays the real scan: every cell the code visited, in order, up to the count
 /// it reported, so the cells searched after the guests were found are plain to see.
 /// </summary>
@@ -34,10 +34,10 @@ public sealed partial class GuestExhibit(Finding finding, CodePath initial, Page
 
     protected override string Caption(CodePath path) =>
         "Control room, F3 SECURITY, LOCATE GUESTS. The grid replays the cells the search visited. Run by " +
-        (path == CodePath.Before ? "ParkOps.Start's GuestLocatorPanel." : "the fixed GuestLocatorPanel.");
+        (path == CodePath.Before ? "the original GuestLocatorPanel." : "the fixed GuestLocatorPanel.");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("foundThem + Cells[...]", "ParkOps.Start")
+        ? ("foundThem + Cells[...]", "ParkOps (original)")
         : ("break search; map[x,y]", "ParkOps.Story.Fixed");
 
     protected override string Reading(CodePath path)

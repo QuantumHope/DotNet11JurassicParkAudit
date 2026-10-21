@@ -18,11 +18,10 @@ lesson · `ESC` quit.
 
 All ten lessons are built: finding → before → root cause → fix → after → resolution, with build or console pages
 where the lesson's moment happens outside the park. See [PLAN.md](PLAN.md) for how each is simulated and what
-building them found about Changes.md on RC2.
+building them found on RC2.
 
 The story keeps its own copy of the park database (`parkops.db`) next to the exe, migrated and seeded at startup.
-How the rest gets added is in [PLAN.md](PLAN.md).
 
-The *before* code is compiled straight from `../ParkOps.Start` (linked in the csproj); the *after* code lives in
-`src/ParkOps.Story/Chapters/IncNNN/` under `ParkOps.Story.Fixed`. Both are embedded as text too, so the code
-on screen is the code that runs.
+The *before* code is the park's original code in [`src/Before`](src/Before) (projects referenced, control-room files
+linked into the csproj); the *after* code lives in `src/ParkOps.Story/Chapters/IncNNN/` under `ParkOps.Story.Fixed`.
+Both are embedded as text too, so the code on screen is the code that runs.

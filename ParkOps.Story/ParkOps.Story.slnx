@@ -4,9 +4,9 @@
     <Project Path="src/ParkOps.Story.Fences.Before/ParkOps.Story.Fences.Before.csproj" />
     <Project Path="src/ParkOps.Story.Fences.After/ParkOps.Story.Fences.After.csproj" />
   </Folder>
-  <Folder Name="/ParkOps.Start/">
-    <Project Path="../ParkOps.Start/src/ParkOps.Core/ParkOps.Core.csproj" />
-    <Project Path="../ParkOps.Start/src/ParkOps.Genetics.Plugin/ParkOps.Genetics.Plugin.csproj" />
-    <Project Path="../ParkOps.Start/src/ParkOps.Data/ParkOps.Data.csproj" />
+  <Folder Name="/src/Before/">
+    <Project Path="src/Before/ParkOps.Core/ParkOps.Core.csproj" />
+    <Project Path="src/Before/ParkOps.Genetics.Plugin/ParkOps.Genetics.Plugin.csproj" />
+    <Project Path="src/Before/ParkOps.Data/ParkOps.Data.csproj" />
   </Folder>
 </Solution>

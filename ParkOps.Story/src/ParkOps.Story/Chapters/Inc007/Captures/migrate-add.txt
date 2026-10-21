@@ -1,4 +1,4 @@
-# ParkOps.Start with Fence.Voltage added, database at InitialCreate; dotnet-ef 11.0.0-rc.2, 2026-10-18 (stack trace trimmed)
+# the original ParkOps code with Fence.Voltage added, database at InitialCreate; dotnet-ef 11.0.0-rc.2, 2026-10-18 (stack trace trimmed)
 $ dotnet ef database update --add AddFenceVoltage --project src/ParkOps.Data
 Build started...
 Build succeeded.

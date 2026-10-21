@@ -4,7 +4,7 @@ public enum Severity { Critical, High, Medium, Low }
 
 /// <summary>
 /// One lesson in the report: the .NET 11 / C# 15 improvement it teaches (the headline), and the park incident
-/// that shows why it matters. Mirrors the running order in ParkOps.Start's DemoScript.
+/// that shows why it matters. This is the talk's running order.
 /// </summary>
 public sealed record Finding(
     int Lesson, string Id, string Platform, string Feature, string Incident,

@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Lesson 5, after: the same file, unchanged, with the one-line fix from Changes.md applied to the project. -->
+  <!-- Lesson 5, after: the same file, unchanged, with the one-line project fix applied. -->
   <PropertyGroup>
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\ParkOps.Start\src\ParkOps.ControlRoom\Fences\MaintenanceWindow.cs" Link="MaintenanceWindow.cs" />
+    <Compile Include="..\Before\ParkOps.ControlRoom\Fences\MaintenanceWindow.cs" Link="MaintenanceWindow.cs" />
   </ItemGroup>
 </Project>

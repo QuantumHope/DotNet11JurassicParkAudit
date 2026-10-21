@@ -79,7 +79,7 @@ public sealed class NarratorExhibit(Finding finding, CodePath initial, Page page
         (path == CodePath.Before ? "no backup." : ollamaUp ? $"backup: {BackupModel}." : "backup: a labelled stand-in (no Ollama here).");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("OllamaApiClient", "ParkOps.Start")
+        ? ("OllamaApiClient", "ParkOps (original)")
         : ("OrderedFailover...", "MEAI 10.11");
 
     protected override string Reading(CodePath path) => path == CodePath.Before

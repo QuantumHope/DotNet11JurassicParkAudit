@@ -9,7 +9,7 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Chapters.Inc002;
 
 /// <summary>
-/// Exhibit for lesson 2: the control room's F2 ANIMALS screen, its census computed live by ParkOps.Start's
+/// Exhibit for lesson 2: the control room's F2 ANIMALS screen, its census computed live by the original
 /// CensusPanel (inner Join) or the fixed one (FullJoin). Entry plays the RECOUNT animation, then the readout types out.
 /// </summary>
 public sealed class CensusExhibit(Finding finding, CodePath initial, Page page) : ExhibitBeat(finding, initial, page)
@@ -31,10 +31,10 @@ public sealed class CensusExhibit(Finding finding, CodePath initial, Page page) 
 
     protected override string Caption(CodePath path) =>
         "Control room, F2 ANIMALS, after RECOUNT. Census computed live by " +
-        (path == CodePath.Before ? "ParkOps.Start's CensusPanel (expected.Join)." : "the fixed CensusPanel (expected.FullJoin).");
+        (path == CodePath.Before ? "the original CensusPanel (expected.Join)." : "the fixed CensusPanel (expected.FullJoin).");
 
     protected override (string Code, string From) CodeFor(CodePath path) => path == CodePath.Before
-        ? ("expected.Join(...)", "ParkOps.Start")
+        ? ("expected.Join(...)", "ParkOps (original)")
         : ("expected.FullJoin(...)", "ParkOps.Story.Fixed");
 
     protected override string Reading(CodePath path)
