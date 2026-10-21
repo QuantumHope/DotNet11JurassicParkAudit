@@ -1,8 +1,8 @@
 # ParkOps.Story: implementation plan
 
 A presenter-driven SadConsole app that tells the talk as a **Leading EDJE post-incident assessment** of
-InGen's ParkOps. **The report is the focus**: it opens on the executive summary, and each .NET 11 / C# 15
-improvement is a *lesson* in it, named for the feature it teaches. The park's control room supports the report
+InGen's ParkOps, played as a **slideshow**: a title slide, then each .NET 11 / C# 15 improvement as a *lesson*, named
+for the feature it teaches and opened by its own section slide, then a closing slide. The park's control room supports the report
 as *exhibits*: live screens set into report pages. Every fix is already compiled in: moving through the story
 switches which code path is active, so there is nothing to rebuild on stage.
 
@@ -29,7 +29,8 @@ ParkOps.Story/
     Story/                         # engine: StoryScreen (navigation, transitions, story bar), Beat, Chapter, Deck
     Rendering/                     # Canvas (cells + 2x overlay for big type), Brand, ReportPage, Workstation
     Code/                          # SourceFile (embedded source), CSharpTokenizer, LineDiff, CodeView
-    Beats/                         # page types: Summary (home), Finding, Exhibit (base), Code, Fix, Console, Resolution
+    Beats/                         # slides: Title, LessonIntro, Closing; pages: Finding, Exhibit (base), Code,
+                                   #   Walkthrough, Fix, Console, Resolution; Summary (the HOME index)
     Chapters/IncNNN/               # one folder per lesson: its "after" code, its exhibit, Captures/*.txt
   src/ParkOps.Story.Fences.Before/ # lesson 5: the original MaintenanceWindow.cs, built as originally built
   src/ParkOps.Story.Fences.After/  #           the same file, built with runtime-async=on
@@ -42,17 +43,18 @@ change it only to stage an incident. The *after* version
 of each file lives in `Chapters/IncNNN/` under a `ParkOps.Story.Fixed` namespace, so both compile into
 one assembly side by side.
 
-## Shape of the report
+## Shape of the deck
 
-The app opens on the **executive summary**: the report's title, a short summary, a resolved-lessons
-scorecard, and all ten lessons, each headlined by its improvement and platform (`.NET 11`, `C# 15`,
-`EF Core 11`...), with the incident beneath it. `↑`/`↓` picks a lesson and `→`/`Enter` opens it. Finishing a
-lesson returns here with the next one selected, and its status turns to RESOLVED.
+One straight line, so the talk is just "next": **title** (the talk's name, the hook) → each lesson → **closing**
+(resolved count, every lesson ticked off, the recommendation) → **index**. Next and back cross lesson boundaries.
+The index is the old executive summary table: every lesson by improvement, platform, severity and status. It's for
+jumping (`Home`, then `↑`/`↓` and `Enter`), not part of the talk.
 
-## A lesson = six pages (or a few more)
+## A lesson = a section slide and six pages (or a few more)
 
 | Page | Look | What happens | Steps |
 |---|---|---|---|
+| **Intro** | Dark slide | Lesson number, the improvement, the incident in one sentence, a 1-10 progress strip | types in |
 | **Finding** | Report | Feature as the headline; platform, severity, incident, reporter; observation and impact | reveal paragraphs |
 | **Before** | Report + exhibit | The control-room screen runs the real *before* code; caption and code-path panel alongside | the report's reading; lines it refers to are marked |
 | **Root cause** | Report + code | The *before* source, syntax highlighted, with the bad line flagged | callout on the root cause |
@@ -63,7 +65,10 @@ lesson returns here with the next one selected, and its status turns to RESOLVED
 Fix pages take several files (editor tabs, one per step), including new files and deletions. Where a lesson's moment
 is a build, a script or an HTTP exchange, a **Console** page replays a captured real run (`ConsoleCapture`), and it can
 stand in for a Before/After exhibit (lessons 1 and 8). If a fix, run live, doesn't fully fix its incident, the
-resolution says so and stamps PARTIAL; the summary shows it.
+resolution says so and stamps PARTIAL; the closing slide and the index show it.
+
+A **Walkthrough** page can stand in for Root cause (lesson 1): the whole before file on the left, scrolled to and
+highlighted at one stop per step, with a numbered narrative on the right that ticks off the earlier stops.
 
 ### Switching the active code path
 
@@ -127,9 +132,9 @@ wordmark: SadConsole can't render League Spartan.
 
 ## Controls
 
-Summary: `↑`/`↓` pick a lesson, `→`/`Enter` open it. Lesson: `→` `Space` `PgDn` next · `←` `Backspace` `PgUp`
-back (past the first page returns to the summary) · `Home` summary · `TAB` flip before/after on an exhibit ·
-`R` replay the page · `1`-`9`, `0` open a lesson · `ESC` quit.
+`→` `Space` `PgDn` next · `←` `Backspace` `PgUp` back, straight through the deck across lessons · `Home` index
+(`↑`/`↓` pick, `→`/`Enter` open) · `TAB` flip before/after on an exhibit · `R` replay the slide · `1`-`9`, `0` open a
+lesson at its section slide · `ESC` quit.
 Going back lands on the previous page's final state, with no animation.
 
 ## Milestones

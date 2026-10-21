@@ -21,7 +21,7 @@ Exe: `ParkOps.Story/src/ParkOps.Story/bin/Debug/net11.0/ParkOps.Story.exe`.
 
 ## 2a. Rehearsal capture (fastest, no key driving)
 
-The app has a built-in unattended mode. It starts on the executive summary, opens every lesson in turn, and
+The app has a built-in unattended mode. It walks the whole deck in order (title, every lesson, closing, index) and
 saves a PNG of every step at 1.1s, 3s and 7s into its animation, on a 4x clock. Then it exits.
 
 ```bash
@@ -29,8 +29,9 @@ dotnet run --project ParkOps.Story/src/ParkOps.Story -- --capture <out-dir>     
 dotnet run --project ParkOps.Story/src/ParkOps.Story -- --capture <out-dir> --lesson 7   # one lesson, ~30 s
 ```
 
-Files are named `NN-<INC-id>-<Page>-<step>@<t>s.png`. Read the `@7.0s` ones to see each finished step. The
-summary is re-shot every time a lesson returns to it, so `01-Summary-*` shows the final state.
+Files are named `NN-<chapter>-<Page>-<step>@<t>s.png` (chapter is `Title`, an INC id, `Closing` or `Index`). Read
+the `@7.0s` ones to see each finished step. With `--lesson N` it starts at that lesson's intro slide and stops at the
+end of the lesson.
 Use this after any visual change. It catches crashes on every page too: the run stops early on one, and
 `dotnet run` prints the exception.
 
@@ -46,15 +47,15 @@ Use `scripts/drive.ps1`. It launches the exe, presses real keys and screenshots 
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/run-parkops-story/scripts/drive.ps1 `
-  -Out <out-dir> -Steps 'wait:1 shot:summary enter wait:1 rightx2 wait:5 shot:exhibit tab wait:4 shot:tab esc'
+  -Out <out-dir> -Steps 'wait:1 shot:title 2 wait:1 rightx3 wait:5 shot:exhibit tab wait:4 shot:tab esc'
 ```
 
-- The example opens lesson 2 from the summary; `rightx2` steps past the Finding page's second section to the
-  exhibit. Each `right` is one step, not one page: pages with callouts take two.
+- The example jumps to lesson 2's intro slide with `2`; `rightx3` steps to its Finding page, past its second section,
+  and on to the exhibit. Each `right` is one step, not one page: pages with callouts take two.
 - Steps: key names (`right left up down enter tab esc home space back pgup pgdn r 0-9 f1-f5`), `rightx5`
   to repeat, `wait:N` seconds, `shot:NAME`.
 - `-AppArgs '--lesson','2'` (or `'--lesson 2'`) starts straight inside a lesson. Under `powershell -File` an array
-  arrives as one string; the script splits it on commas and spaces, so check that `s00` shows the lesson, not the summary.
+  arrives as one string; the script splits it on commas and spaces, so check that the first shot shows the lesson's intro slide, not the title.
 - End with `esc`. The script reports `exited: code 0` if the app quit, or stops it if it's still running.
 - **Non-obvious:** keys must be sent with real scan codes (`MapVirtualKey`). SDL ignores scan code 0 for
   Tab and Esc, although the arrow keys still work. The script handles this; don't swap in `SendKeys`.
@@ -65,9 +66,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/run-parkops-s
 
 ### App keys (for writing Steps)
 
-Summary: `up`/`down` pick a lesson (lesson 1 is selected at start), `enter` or `right` opens it. In a lesson: `right` next step/page, `left` back (back past the first page returns to the summary),
-`tab` flips before/after code on an exhibit, `home` summary, `r` replay the page, `1`-`9`, `0` open a lesson,
-`esc` quit. Finishing a lesson's last page returns to the summary with the next lesson selected.
+The deck is one straight line: title (2 steps) → each lesson (intro slide, then its pages) → closing (2 steps) → index.
+`right` next step/slide and `left` back, across lesson boundaries. `tab` flips before/after code on an exhibit, `home`
+opens the index (`up`/`down` pick, `enter` open), `r` replays the slide, `1`-`9`, `0` open a lesson at its intro
+slide, `esc` quits.
 
 ## Where the code is
 

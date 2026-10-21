@@ -1,23 +1,24 @@
 # ParkOps.Story
 
-The talk as a Leading EDJE post-incident assessment. The report leads: it opens on the executive summary, and each
-.NET 11 / C# 15 improvement is a lesson in it. The park's control room appears as exhibits inside the report,
-running the real before/after code. Every fix is compiled in, so nothing is rebuilt on stage.
+The talk as a Leading EDJE post-incident assessment, played as a slideshow: a title slide, then each .NET 11 / C# 15
+improvement as a lesson (its own section slide, then the report pages), then the closing report to the board. The
+park's control room appears as exhibits inside the report, running the real before/after code. Every fix is compiled
+in, so nothing is rebuilt on stage.
 
 ```
-dotnet run --project src/ParkOps.Story                    # opens on the executive summary
+dotnet run --project src/ParkOps.Story                    # opens on the title slide
 dotnet run --project src/ParkOps.Story -- --lesson 2      # straight into lesson 2 (LINQ FullJoin)
 dotnet run --project src/ParkOps.Story -- --capture out   # unattended run of every lesson, a PNG of every step
 dotnet run --project src/ParkOps.Story -- --capture out --lesson 5   # ...or just one lesson
 ```
 
-Keys: on the summary, `↑` `↓` pick a lesson and `→` / `Enter` opens it. In a lesson, `→` `Space` `PgDn` or left click
-next, `←` `Backspace` `PgUp` or right click back; finishing a lesson (or going back past its start) returns to the
-summary. `Home` summary · `TAB` flip before/after code on an exhibit · `R` replay the page · `1`-`9`, `0` open a
-lesson · `ESC` quit.
+Keys: `→` `Space` `PgDn` or left click next, `←` `Backspace` `PgUp` or right click back. Both run straight through
+the deck, across lessons: title → lessons 1-10 → closing → index. `Home` index of lessons (`↑` `↓` pick, `Enter`
+open) · `TAB` flip before/after code on an exhibit · `R` replay the slide · `1`-`9`, `0` open a lesson · `ESC` quit.
 
-All ten lessons are built: finding → before → root cause → fix → after → resolution, with build or console pages
-where the lesson's moment happens outside the park. See [PLAN.md](PLAN.md) for how each is simulated and what
+All ten lessons are built: section slide → finding → before → root cause → fix → after → resolution, with build or
+console pages where the lesson's moment happens outside the park. Lesson 1's root cause is a walkthrough
+(`WalkthroughBeat`): the whole script, scrolled and highlighted one flaw at a time. See [PLAN.md](PLAN.md) for how each is simulated and what
 building them found on RC2.
 
 The story keeps its own copy of the park database (`parkops.db`) next to the exe, migrated and seeded at startup.

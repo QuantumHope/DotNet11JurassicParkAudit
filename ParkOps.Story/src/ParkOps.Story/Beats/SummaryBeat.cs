@@ -8,9 +8,8 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Beats;
 
 /// <summary>
-/// The executive summary, and the report's home page: what we found, how much is resolved, and every lesson
-/// headlined by the .NET 11 / C# 15 improvement it teaches. Up/Down picks a lesson, NEXT or Enter opens it;
-/// finishing a lesson comes back here with the next one selected.
+/// The index of lessons (HOME): every lesson headlined by the .NET 11 / C# 15 improvement it teaches, with how much is
+/// resolved. Up/Down picks a lesson, NEXT or Enter opens it. The talk itself runs as a slideshow; this is for jumping.
 /// </summary>
 public sealed class SummaryBeat(Page page) : Beat
 {
@@ -21,7 +20,7 @@ public sealed class SummaryBeat(Page page) : Beat
     private (string Text, TimeSpan At)? notice;
     private TimeSpan now;
 
-    public override string Label => "Summary";
+    public override string Label => "Index";
 
     public override string? Hint => "↑↓ lesson  ENTER open";
 
@@ -53,15 +52,13 @@ public sealed class SummaryBeat(Page page) : Beat
         now = frame.Now;
         var report = new ReportPage(frame.Canvas);
         var canvas = frame.Canvas;
-        report.Frame("Executive summary", page);
+        report.Frame("Index", page);
 
         // Title block.
-        report.Kicker(ReportPage.Left, 6, "Post-incident technical assessment");
-        report.Heading(ReportPage.Left, 8, "Isla Nublar ParkOps");
+        report.Kicker(ReportPage.Left, 6, "Index of lessons");
+        report.Heading(ReportPage.Left, 8, "Jump to a lesson");
         report.Paragraph(ReportPage.Left, 11, 76,
-            "ParkOps told the control room the park was safe. It wasn't. We traced ten incidents to code, and each one is " +
-            "fixed by an improvement in .NET 11 or C# 15. Every lesson below follows the same path: the incident, the " +
-            "evidence on the park's own screens, the root cause, the fix, and the result.", Brand.DarkGray);
+            "Pick any lesson to open it at its section slide. The talk runs in this order from the title slide.", Brand.DarkGray);
 
         // Scorecard.
         const int scoreX = 92;

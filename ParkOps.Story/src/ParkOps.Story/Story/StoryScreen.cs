@@ -7,9 +7,10 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Story;
 
 /// <summary>
-/// Plays the report. It opens on the executive summary; a lesson plays one beat at a time, NEXT walking through each
-/// beat's steps first, and finishing a lesson returns to the summary with the next one selected. Forward moves wipe
-/// in; going back lands on the previous beat already finished. Row 43 is the story bar (where are we, what's next).
+/// Plays the talk as a slideshow: title, each lesson in order, closing, then the index. NEXT walks each beat's steps,
+/// then the next beat, straight through from one lesson into the next; BACK does the same in reverse. HOME jumps to
+/// the index, where ENTER opens any lesson. Forward moves wipe in; going back lands on the previous beat already
+/// finished. Row 43 is the story bar (where are we, what's next).
 /// </summary>
 public sealed class StoryScreen : ScreenSurface, IStory
 {
@@ -50,23 +51,31 @@ public sealed class StoryScreen : ScreenSurface, IStory
     /// <summary>Speeds up the story clock (rehearsal capture). Animations are functions of the clock, so they just run faster.</summary>
     public double TimeScale { get; set; } = 1;
 
-    /// <summary>How many times a finished lesson has handed back to the summary.</summary>
-    public int ReturnsToSummary { get; private set; }
-
     /// <summary>Whether the current beat has finished any live work it started.</summary>
     public bool Settled => Beat.Settled;
 
-    /// <summary>Lesson numbers that have pages, in order.</summary>
-    private IEnumerable<int> BuiltLessons => beats.Select(b => b.Chapter.Number).OfType<int>().Distinct().Order();
+    /// <summary>Lessons NEXT has carried us out of, for <see cref="StopAfterLessons"/>.</summary>
+    private int lessonsFinished;
 
-    /// <summary>Back on the summary after finishing every built lesson (or <see cref="StopAfterLessons"/> of them).</summary>
-    public bool AtEnd => current == 0 && ReturnsToSummary >= (StopAfterLessons ?? BuiltLessons.Count());
+    /// <summary>The index of lessons: the deck's last beat.</summary>
+    private int IndexBeat => beats.Count - 1;
 
-    /// <summary>Rehearsal of a single lesson: stop after this many returns to the summary.</summary>
+    private bool OnLastStepOfLesson =>
+        Chapter.Number is not null && step == Beat.Steps - 1 && (current == beats.Count - 1 || beats[current + 1].Chapter != Chapter);
+
+    /// <summary>
+    /// The rehearsal is done: on the index after walking the whole deck, or on the last step of the last lesson asked
+    /// for by <see cref="StopAfterLessons"/>.
+    /// </summary>
+    public bool AtEnd => StopAfterLessons is { } lessons
+        ? OnLastStepOfLesson && lessonsFinished + 1 >= lessons
+        : current == IndexBeat;
+
+    /// <summary>Rehearsal of a single lesson: stop at the end of this many lessons.</summary>
     public int? StopAfterLessons { get; set; }
 
     /// <summary>A file-name-friendly name for where we are, e.g. "05-INC-002-Fix-2".</summary>
-    public string Place => $"{current + 1:00}-{(Chapter.Id is { Length: > 0 } id ? id : "Summary")}-{Beat.Label}-{step + 1}";
+    public string Place => $"{current + 1:00}-{Chapter.Id}-{Beat.Label}-{step + 1}";
 
     private void Go(int index, bool forward)
     {
@@ -78,7 +87,7 @@ public sealed class StoryScreen : ScreenSurface, IStory
         Beat.Enter();
     }
 
-    /// <summary>NEXT: the beat's next step, then its next beat; the end of a lesson returns to the summary.</summary>
+    /// <summary>NEXT: the beat's next step, then the next beat, carrying straight on into the next lesson.</summary>
     public void Next()
     {
         if (Beat.HandleKey(Keys.Enter, this)) return;
@@ -87,26 +96,26 @@ public sealed class StoryScreen : ScreenSurface, IStory
             step++;
             stepStarts[step] = now;
         }
-        else if (current < beats.Count - 1 && beats[current + 1].Chapter == Chapter) Go(current + 1, forward: true);
-        else if (Chapter.Number is { } lesson)
+        else if (current < beats.Count - 1)
         {
-            ReturnsToSummary++;
-            ToSummary(selectLesson: BuiltLessons.Where(n => n > lesson).DefaultIfEmpty(lesson + 1).First());
+            if (OnLastStepOfLesson) lessonsFinished++;
+            if (current + 1 == IndexBeat && beats[IndexBeat].Beat is Beats.SummaryBeat index) index.Select(1);
+            Go(current + 1, forward: true);
         }
     }
 
-    /// <summary>BACK: the previous step, then the previous beat; back from a lesson's first page is the summary.</summary>
+    /// <summary>BACK: the previous step, then the previous beat, back across lessons to the title slide.</summary>
     private void Back()
     {
         if (step > 0) step--;
-        else if (current > 0 && beats[current - 1].Chapter == Chapter) Go(current - 1, forward: false);
-        else if (Chapter.Number is { } lesson) ToSummary(selectLesson: lesson);
+        else if (current > 0) Go(current - 1, forward: false);
     }
 
-    private void ToSummary(int selectLesson)
+    /// <summary>HOME: the index of lessons, with <paramref name="selectLesson"/> highlighted.</summary>
+    private void ToIndex(int selectLesson)
     {
-        if (beats[0].Beat is Beats.SummaryBeat summary) summary.Select(selectLesson);
-        Go(0, forward: true);
+        if (beats[IndexBeat].Beat is Beats.SummaryBeat index) index.Select(selectLesson);
+        Go(IndexBeat, forward: true);
     }
 
     private void Replay() => Go(current, forward: true);
@@ -125,7 +134,7 @@ public sealed class StoryScreen : ScreenSurface, IStory
         else if (keyboard.IsKeyPressed(Keys.Left) || keyboard.IsKeyPressed(Keys.Back) || keyboard.IsKeyPressed(Keys.PageUp)) Back();
         else if (keyboard.IsKeyPressed(Keys.Up)) Beat.HandleKey(Keys.Up, this);
         else if (keyboard.IsKeyPressed(Keys.Down)) Beat.HandleKey(Keys.Down, this);
-        else if (keyboard.IsKeyPressed(Keys.Home)) ToSummary(selectLesson: Chapter.Number ?? 2);
+        else if (keyboard.IsKeyPressed(Keys.Home)) ToIndex(selectLesson: Chapter.Number ?? 1);
         else if (keyboard.IsKeyPressed(Keys.Tab)) Beat.Toggle();
         else if (keyboard.IsKeyPressed(Keys.R)) Replay();
         else if (keyboard.IsKeyPressed(Keys.Escape)) Game.Instance.MonoGameInstance.Exit();
@@ -137,7 +146,7 @@ public sealed class StoryScreen : ScreenSurface, IStory
                 {
                     var lesson = digit == 0 ? 10 : digit;
                     if (HasLesson(lesson)) OpenLesson(lesson);
-                    else ToSummary(selectLesson: lesson);
+                    else ToIndex(selectLesson: lesson);
                     break;
                 }
             }
@@ -203,7 +212,7 @@ public sealed class StoryScreen : ScreenSurface, IStory
         canvas.Print(11, y, "EDJE", Brand.Green, Brand.Black);
 
         // Right: hint and arrows. Middle: one pill per beat. Left: the chapter title, clipped to whatever room is left.
-        var keys = $"{beat.Hint ?? "HOME summary"}   {Glyphs.ArrowLeft} {Glyphs.ArrowRight} ";
+        var keys = $"{beat.Hint ?? "HOME index"}   {Glyphs.ArrowLeft} {Glyphs.ArrowRight} ";
         var pills = chapter.Beats.Select((b, index) =>
         {
             var done = chapter.Beats.IndexOf(beat) > index;

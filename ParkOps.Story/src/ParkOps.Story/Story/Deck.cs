@@ -13,15 +13,15 @@ using ParkOps.Story.Chapters.Inc010;
 namespace ParkOps.Story.Story;
 
 /// <summary>
-/// The report: the executive summary first (the home page), then one chapter per lesson. Add a lesson here as each
-/// incident is built (see PLAN.md); the summary lists all ten either way.
+/// The talk as one slideshow: a title slide, then each lesson (its section slide first), then the closing slide.
+/// NEXT and BACK just walk it in order. The index (every lesson at a glance) comes last, after the closing slide,
+/// and HOME jumps to it from anywhere.
 /// </summary>
 public static class Deck
 {
     public static IReadOnlyList<Chapter> Build()
     {
         var pages = new Pages();
-        var summary = new SummaryBeat(pages.Next());
         Chapter[] lessons =
         [
             Inc001.Build(pages),
@@ -35,7 +35,15 @@ public static class Deck
             Inc009.Build(pages),
             Inc010.Build(pages),
         ];
-        foreach (var lesson in lessons) summary.BuiltLessons.Add(lesson.Number!.Value);
-        return [new("", "Executive summary", null, [summary]), .. lessons];
+        var index = new SummaryBeat(pages.Next());
+        foreach (var lesson in lessons) index.BuiltLessons.Add(lesson.Number!.Value);
+
+        return
+        [
+            new("Title", "Unforeseen Consequences", null, [new TitleBeat()]),
+            .. lessons.Select(lesson => lesson with { Beats = [new LessonIntroBeat(Findings.Get(lesson.Id)), .. lesson.Beats] }),
+            new("Closing", "Report to the board", null, [new ClosingBeat()]),
+            new("Index", "Index of lessons", null, [index]),
+        ];
     }
 }

@@ -33,21 +33,35 @@ public static class Inc001
                     "When the fences went down, the team needed the diagnostics: recent commits and the runtime's state. The script " +
                     "works, but only dnedry had ever changed it, and nobody else wanted to.",
                     $"{total}", "lines in one file-based script"),
-                new("Why it matters",
-                    "Most of the script is plumbing: starting git, wiring up two output streams, waiting, picking stdout or stderr. " +
-                    "And its helpers can't move to their own file, because a file-based app was one file.",
-                    $"{plumbing.Lines.Count + 1}", "of those lines are one hand-rolled 'run a process' helper"),
             ], pages.Next()),
 
             new ConsoleBeat(title, "Before", "The diagnostic, as shipped",
                 ConsoleCapture.Load("capture/Inc001/diag-before.txt"), null, pages.Next()),
 
-            new CodeBeat(title, plumbing,
+            new WalkthroughBeat(title, "Reading the script", before,
             [
-                new("var startInfo = new ProcessStartInfo(fileName)", "Plumbing nobody else could maintain",
-                    "Redirect both streams, collect them through events, start, begin both reads, wait, then pick stdout or stderr " +
-                    "by exit code. Every line is easy to get subtly wrong, and this is just to read git log.",
-                    new Rectangle(28, 32, 90, 6)),
+                new("One file, top to bottom",
+                    "This is the whole diagnostic as it ships: a file-based app, run with dotnet run scripts/diag.cs. No project " +
+                    "file, which is good. Everything else has to live in this one file.",
+                    "#!/usr/bin/env dotnet", "#:package"),
+                new("Its job is three lines",
+                    "Print a header, show the last five commits, print the runtime table. That's the whole diagnostic.",
+                    "AnsiConsole.Write(new Rule", "Diagnostics.PrintRuntimeInfo();"),
+                new("A process runner for git log",
+                    $"To run one command it carries its own {plumbing.Lines.Count + 1}-line helper. It starts with ProcessStartInfo: " +
+                    "redirect stdout and stderr, no shell, no window, then each argument.",
+                    "static async Task<string> RunAndCaptureAsync", "foreach (var argument"),
+                new("Two streams, wired by hand",
+                    "Two StringBuilders, two event handlers with null checks, then Start, BeginOutputReadLine, BeginErrorReadLine " +
+                    "and WaitForExitAsync. Every one of those calls has to be there, in that order.",
+                    "var output = new StringBuilder();", "await process.WaitForExitAsync();"),
+                new("A failure looks like a result",
+                    "When git fails, it hands back stderr as if it were the log. The caller can't tell the difference.",
+                    "return process.ExitCode"),
+                new("And the helpers can't move out",
+                    "PrintRuntimeInfo sits at the bottom because a file-based app was one file. Every new helper makes this file " +
+                    "longer, which is why only dnedry would touch it.",
+                    "// ▶ INC-001b: move this class", "AnsiConsole.Write(table);"),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",

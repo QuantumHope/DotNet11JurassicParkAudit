@@ -1,8 +1,8 @@
 # Unforeseen Consequences: Restoring Park Operations with .NET 11 and C# 15
 
-One app tells the whole talk: **ParkOps.Story**, a Leading EDJE assessment of InGen's park software. It opens on the
-executive summary, lists the ten lessons in running order, and walks each one from finding to fix, running the
-original code and the fixed code side by side.
+One app tells the whole talk: **ParkOps.Story**, a Leading EDJE assessment of InGen's park software, played as a
+slideshow. It opens on a title slide, then takes the ten lessons in order, one focused finding at a time, running the
+original code and the fixed code side by side, and closes with the report to the board.
 
 ```bash
 dotnet run --project ParkOps.Story/src/ParkOps.Story
@@ -26,17 +26,18 @@ lesson 10 uses a labelled stand-in when it isn't running.
 | 9 | JSON unions + `SerializeAsyncEnumerable` | .NET 11 | The sensor feed |
 | 10 | Failover chat client | Microsoft.Extensions.AI | The narrator went silent |
 
-Each lesson is six pages: **finding → before → root cause → fix → after → resolution**.
+Each lesson opens on its own section slide, then runs **finding → before → root cause → fix → after → resolution**.
+Lesson 1's root cause is a walkthrough of the whole script, one flaw at a time.
 
 ## Keys
 
 | Where | Keys |
 |---|---|
-| Summary | `↑` `↓` pick a lesson · `→` / `Enter` open it |
-| In a lesson | `→` `Space` `PgDn` next · `←` `Backspace` `PgUp` back · `TAB` flip before/after on an exhibit · `R` replay the page |
-| Anywhere | `Home` summary · `1`-`9`, `0` jump to a lesson · `ESC` quit |
+| Anywhere | `→` `Space` `PgDn` next · `←` `Backspace` `PgUp` back · `R` replay the slide · `ESC` quit |
+| Exhibits | `TAB` flip between the original and the fixed code |
+| Jumping | `Home` index of lessons (`↑` `↓` pick, `Enter` open) · `1`-`9`, `0` straight to a lesson |
 
-Finishing a lesson returns to the summary with the next one selected.
+Next and back run straight through the deck, across lessons: title → lessons 1-10 → closing → index.
 
 ## What's where
 
