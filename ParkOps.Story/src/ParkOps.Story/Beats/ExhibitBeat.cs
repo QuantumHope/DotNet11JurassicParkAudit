@@ -28,7 +28,7 @@ public sealed record ExhibitClock(TimeSpan Now, TimeSpan Started, bool Busy, boo
 /// </summary>
 public abstract class ExhibitBeat(Finding finding, CodePath initial, Page page) : Beat
 {
-    protected static readonly Rectangle Exhibit = new(ReportPage.Left, 12, 74, 26);
+    protected static readonly Rectangle Exhibit = new(ReportPage.Left, 8, 74, 24);
     private const int ColumnX = 86;
     private const int ColumnWidth = ReportPage.Right - ColumnX;
     private static readonly Color MarkColor = new(28, 52, 24);
@@ -108,8 +108,8 @@ public abstract class ExhibitBeat(Finding finding, CodePath initial, Page page) 
 
         var report = new ReportPage(frame.Canvas);
         report.Frame(finding.LessonLabel, page);
-        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel}  ·  Exhibit {ExhibitNumber}  ·  {(Path == CodePath.Before ? "as shipped" : "with the fix")}");
-        report.Heading(ReportPage.Left, 8, Heading(Path));
+        report.Kicker(ReportPage.Left, ReportPage.KickerRow, $"{finding.LessonLabel}  ·  Exhibit {ExhibitNumber}  ·  {(Path == CodePath.Before ? "as shipped" : "with the fix")}");
+        report.Heading(ReportPage.Left, ReportPage.HeadingRow, Heading(Path));
 
         // The exhibit: a menu-bar strip naming the screen and its status, then the CRT.
         var inner = ws.Screen(Exhibit);
@@ -121,9 +121,9 @@ public abstract class ExhibitBeat(Finding finding, CodePath initial, Page page) 
         ws.Print(bar.X + 1, bar.Y, $"{Cp437.Menu} INGEN // {ScreenName}", Palette.Ink, Palette.MenuBar);
         ws.Print(bar.MaxExtentX - state.Badge.Length - 1, bar.Y, $" {state.Badge} ", Color.White, state.BadgeColor);
 
-        // Two lines at most: the footer rule is directly below.
+        // Two lines at most: the footer is directly below.
         foreach (var (i, line) in ReportPage.WordWrap($"Exhibit {ExhibitNumber}. {Caption(Path)}", Exhibit.Width).Take(2).Index())
-            frame.Canvas.Print(ReportPage.Left, Exhibit.MaxExtentY + 2 + i, line, Brand.Muted, Brand.Paper);
+            frame.Canvas.Print(ReportPage.Left, Exhibit.MaxExtentY + 1 + i, line, Brand.Muted, Brand.Paper);
 
         DrawCodePath(frame, report, frame.Now - started);
         if (!busy) DrawReading(frame, report, state.Marks);

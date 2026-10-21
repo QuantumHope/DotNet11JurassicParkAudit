@@ -120,7 +120,7 @@ public sealed class CensusExhibit(Finding finding, CodePath initial, Page page) 
             ws.Print(area.X, y + 1, new string(Cp437.FullBlock, Math.Max(length, shown > 0 ? 1 : 0)), counting ? Palette.Amber : Palette.AmberDim);
             ws.Print(area.X + length + 1, y + 1, scanned is null ? count.ToString() : $"{shown}/{count}", counting ? Palette.Amber : Palette.Dim);
             before += count;
-            y += 3;
+            y += 2;
         }
     }
 }

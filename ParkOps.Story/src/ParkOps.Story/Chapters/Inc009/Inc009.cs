@@ -43,11 +43,11 @@ public static class Inc009
                 new("new MotionContactJsonConverter()", "A hand-written converter",
                     "MotionContact is an open base type, so System.Text.Json can't know its shapes. dnedry's converter writes three " +
                     "of the four by hand. Staff falls out of the switch and is written as {}.",
-                    new Rectangle(28, 27, 90, 7)),
+                    new Rectangle(28, 24, 90, 7)),
                 new("await foreach (var ping in SensorFeed.ReadAllAsync()) batch.Add(ping);", "Buffered, then sent",
                     "The feed is an IAsyncEnumerable, but the command collects all of it into a list and serializes the list. " +
                     "Nothing leaves until the last sensor reports.",
-                    new Rectangle(28, 27, 90, 7)),
+                    new Rectangle(28, 24, 90, 7)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
@@ -55,12 +55,12 @@ public static class Inc009
                 new FileFix(before, after, new("SerializeAsyncEnumerable", "Stream it, one line each",
                     "SerializeAsyncEnumerable writes each contact as the feed yields it. topLevelValues: true makes each one its own " +
                     "line (JSON Lines) instead of an element of one long array.",
-                    new Rectangle(28, 26, 90, 7))),
+                    new Rectangle(28, 23, 90, 7))),
                 new FileFix(converter, SourceFile.Empty(Feed + "MotionContactJsonConverter.cs"), new("public sealed class MotionContactJsonConverter",
                     "No converter at all",
                     "With MotionContact a union (lesson 3), System.Text.Json serializes whichever case it holds, Employee included. " +
                     "The hand-written converter is deleted.",
-                    new Rectangle(28, 26, 90, 7))),
+                    new Rectangle(28, 23, 90, 7))),
             ], pages.Next()),
 
             new FeedExhibit(finding, CodePath.After, pages.Next()),

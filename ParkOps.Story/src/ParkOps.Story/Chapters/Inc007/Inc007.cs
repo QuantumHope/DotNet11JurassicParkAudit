@@ -51,18 +51,18 @@ public static class Inc007
                 new("var fences = await db.Fences.Include(f => f.Breaches).ToListAsync();", "The database is a list",
                     "Include pulls every breach for every fence and ToListAsync materializes the lot, change-tracked, before " +
                     "MaxBy runs in memory. The database could have answered with one row.",
-                    new Rectangle(28, 28, 90, 7)),
+                    new Rectangle(28, 25, 90, 7)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
                 new FileFix(before, after, new("MaxByAsync", "New in EF Core 11",
                     "MaxByAsync is translated to SQL: ORDER BY the breach count, take one. Only the winning fence comes back.",
-                    new Rectangle(28, 28, 90, 6))),
+                    new Rectangle(28, 25, 90, 6))),
                 new FileFix(SourceFile.Load("before/Fence.cs", FencePath), SourceFile.Load("after/Inc007/Fence.cs", FencePath),
                     new("public int Voltage { get; set; }", "The board's column",
                         "One property. It still needs a migration before the database has the column.",
-                        new Rectangle(66, 13, 52, 6), NoteLeader.Line)),
+                        new Rectangle(66, 10, 52, 6), NoteLeader.Line)),
             ], pages.Next()),
 
             new ConsoleBeat(title, "Migrate", "One-step migration (RC2 caveat)",
@@ -71,7 +71,7 @@ public static class Inc007
                     "database update --add scaffolds and applies in one step, but on RC2 the migration it scaffolds recreates every " +
                     "table, so applying it fails. The two-step dotnet ef migrations add AddFenceVoltage produces the correct " +
                     "AddColumn. Use that until it's fixed.",
-                    new Rectangle(28, 30, 90, 8)),
+                    new Rectangle(28, 25, 90, 8)),
                 pages.Next()),
 
             new MaintenanceExhibit(finding, CodePath.After, pages.Next()),

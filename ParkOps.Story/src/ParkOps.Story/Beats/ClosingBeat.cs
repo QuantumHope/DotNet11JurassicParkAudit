@@ -30,10 +30,10 @@ public sealed class ClosingBeat : Beat
         canvas.Clear(Brand.Black);
 
         var resolved = Findings.All.Count(f => Findings.Resolved.Contains(f.Id) && !Findings.Partial.Contains(f.Id));
-        Slides.Kicker(canvas, 10, 4, "Report to the board", Brand.Green);
-        canvas.Big(10, 6, $"{resolved} of {Findings.All.Length} lessons resolved", Brand.TrueWhite);
+        Slides.Kicker(canvas, 10, 3, "Report to the board", Brand.Green);
+        canvas.Big(10, 4, $"{resolved} of {Findings.All.Length} lessons resolved", Brand.TrueWhite);
 
-        var y = 10;
+        var y = 8;
         foreach (var (index, finding) in Findings.All.Index())
         {
             if (frame.Elapsed < RowTime * index) break;
@@ -48,16 +48,16 @@ public sealed class ClosingBeat : Beat
 
         if (frame.Since(1) is var since && since >= TimeSpan.Zero)
         {
-            canvas.Fill(new Rectangle(82, 10, 1, 19), Brand.Green, Brand.Green);
-            Slides.Kicker(canvas, 85, 10, "Recommendation", Brand.Green);
-            var row = 12;
+            canvas.Fill(new Rectangle(82, 8, 1, 19), Brand.Green, Brand.Green);
+            Slides.Kicker(canvas, 85, 8, "Recommendation", Brand.Green);
+            var row = 10;
             foreach (var (index, text) in Recommendations.Index())
             {
                 row = Slides.Type(canvas, 85, row, 36, text, Brand.WhiteShade, since - TimeSpan.FromMilliseconds(500 * index), 0.2) + 1;
             }
         }
 
-        canvas.Print(10, 38, "Questions?", Brand.Green, Brand.Black);
-        canvas.Print(Canvas.Width - 30, 38, "→  index of all lessons", Brand.LineNumber, Brand.Black);
+        canvas.Print(10, 31, "Questions?", Brand.Green, Brand.Black);
+        canvas.Print(Canvas.Width - 30, 31, "→  index of all lessons", Brand.LineNumber, Brand.Black);
     }
 }

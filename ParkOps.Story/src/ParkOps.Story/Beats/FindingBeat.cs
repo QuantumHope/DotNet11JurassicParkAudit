@@ -23,25 +23,25 @@ public sealed class FindingBeat(Finding finding, string system, string source, I
         var canvas = frame.Canvas;
         report.Frame(finding.LessonLabel, page);
 
-        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel} of {Findings.All.Length:00}  ·  The finding");
-        report.Heading(ReportPage.Left, 8, finding.Feature);
-        var x = report.PlatformPill(ReportPage.Left, 11, finding.Platform);
-        x = report.SeverityPill(x + 1, 11, finding.Severity);
-        report.Pill(x + 1, 11, "OPEN", Brand.DarkGray);
+        report.Kicker(ReportPage.Left, ReportPage.KickerRow, $"{finding.LessonLabel} of {Findings.All.Length:00}  ·  The finding");
+        report.Heading(ReportPage.Left, ReportPage.HeadingRow, finding.Feature);
+        var x = report.PlatformPill(ReportPage.Left, 7, finding.Platform);
+        x = report.SeverityPill(x + 1, 7, finding.Severity);
+        report.Pill(x + 1, 7, "OPEN", Brand.DarkGray);
 
-        report.Facts(ReportPage.Left, 13,
+        report.Facts(ReportPage.Left, 9,
         [
             ("Incident", $"{finding.Id}  {finding.Incident}"),
             ("Reported by", $"{finding.ReportedBy}, {finding.Role}"),
             ("System", system),
             ("Source", source),
         ]);
-        report.Rule(18);
+        report.Rule(14);
 
         const int textWidth = 64;
-        var y = 20;
+        var y = 16;
         const int statX = ReportPage.Left + textWidth + 8;
-        var statY = 20; // big text needs an even row
+        var statY = 16; // big text needs an even row
         foreach (var (index, section) in sections.Index())
         {
             var since = frame.Since(index);

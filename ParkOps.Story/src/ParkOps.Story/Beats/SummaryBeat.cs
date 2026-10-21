@@ -55,27 +55,27 @@ public sealed class SummaryBeat(Page page) : Beat
         report.Frame("Index", page);
 
         // Title block.
-        report.Kicker(ReportPage.Left, 6, "Index of lessons");
-        report.Heading(ReportPage.Left, 8, "Jump to a lesson");
-        report.Paragraph(ReportPage.Left, 11, 76,
+        report.Kicker(ReportPage.Left, ReportPage.KickerRow, "Index of lessons");
+        report.Heading(ReportPage.Left, ReportPage.HeadingRow, "Jump to a lesson");
+        report.Paragraph(ReportPage.Left, 7, 76,
             "Pick any lesson to open it at its section slide. The talk runs in this order from the title slide.", Brand.DarkGray);
 
         // Scorecard.
         const int scoreX = 92;
         var resolved = Findings.All.Count(f => Findings.Resolved.Contains(f.Id) && !Findings.Partial.Contains(f.Id));
-        canvas.Fill(new Rectangle(scoreX - 2, 6, 1, 8), Brand.Green, Brand.Green);
-        report.Kicker(scoreX, 6, "Lessons resolved");
-        report.Heading(scoreX, 8, $"{resolved} / {Findings.All.Length}", resolved > 0 ? Brand.DarkGreen : Brand.Ink);
-        canvas.Print(scoreX, 11, "Prepared for InGen by Leading EDJE", Brand.DarkGray, Brand.Paper);
-        canvas.Print(scoreX, 12, Workstation.Clip(RuntimeInformation.FrameworkDescription, ReportPage.Right - scoreX), Brand.Muted, Brand.Paper);
+        canvas.Fill(new Rectangle(scoreX - 2, 3, 1, 6), Brand.Green, Brand.Green);
+        report.Kicker(scoreX, ReportPage.KickerRow, "Lessons resolved");
+        report.Heading(scoreX, ReportPage.HeadingRow, $"{resolved} / {Findings.All.Length}", resolved > 0 ? Brand.DarkGreen : Brand.Ink);
+        canvas.Print(scoreX, 7, "Prepared for InGen by Leading EDJE", Brand.DarkGray, Brand.Paper);
+        canvas.Print(scoreX, 8, Workstation.Clip(RuntimeInformation.FrameworkDescription, ReportPage.Right - scoreX), Brand.Muted, Brand.Paper);
 
         // Lessons.
         int[] columns = [ReportPage.Left + 2, ReportPage.Left + 13, ReportPage.Left + 32, ReportPage.Left + 85, ReportPage.Left + 97];
         string[] headers = ["LESSON", "PLATFORM", "IMPROVEMENT  /  INCIDENT", "SEVERITY", "STATUS"];
-        foreach (var (i, header) in headers.Index()) canvas.Print(columns[i], 16, header, Brand.Muted, Brand.Paper);
-        report.Rule(17);
+        foreach (var (i, header) in headers.Index()) canvas.Print(columns[i], 10, header, Brand.Muted, Brand.Paper);
+        report.Rule(11);
 
-        var y = 18;
+        var y = 12;
         foreach (var (index, lesson) in Findings.All.Index())
         {
             if (frame.Elapsed < RowTime * index) break;
@@ -104,7 +104,7 @@ public sealed class SummaryBeat(Page page) : Beat
         var hint = notice is { } n && frame.Now - n.At < TimeSpan.FromSeconds(3)
             ? (n.Text, Brand.Red)
             : ("↑ ↓  choose a lesson     →  or  ENTER  open it     1-9, 0  jump straight to a lesson", Brand.Muted);
-        canvas.Print(ReportPage.Left, 39, hint.Item1, hint.Item2, Brand.Paper);
+        canvas.Print(ReportPage.Left, ReportPage.Bottom, hint.Item1, hint.Item2, Brand.Paper);
     }
 
     /// <summary>Lesson numbers that have a chapter in the deck; set by the deck once it's built.</summary>

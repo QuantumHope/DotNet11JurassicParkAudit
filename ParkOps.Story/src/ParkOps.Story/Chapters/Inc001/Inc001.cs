@@ -27,22 +27,14 @@ public static class Inc001
 
         return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
-            new FindingBeat(finding, "Diagnostics script  (scripts/diag.cs)", ScriptPath,
-            [
-                new("Observation",
-                    "When the fences went down, the team needed the diagnostics: recent commits and the runtime's state. The script " +
-                    "works, but only dnedry had ever changed it, and nobody else wanted to.",
-                    $"{total}", "lines in one file-based script"),
-            ], pages.Next()),
-
-            new ConsoleBeat(title, "Before", "The diagnostic, as shipped",
-                ConsoleCapture.Load("capture/Inc001/diag-before.txt"), null, pages.Next()),
+            // Orientation first: the fences, and where the script fits. Then the script itself, early.
+            new FencesBeat(finding, pages.Next()),
 
             new WalkthroughBeat(title, "Reading the script", before,
             [
                 new("One file, top to bottom",
-                    "This is the whole diagnostic as it ships: a file-based app, run with dotnet run scripts/diag.cs. No project " +
-                    "file, which is good. Everything else has to live in this one file.",
+                    $"This is the whole diagnostic as it ships: {total} lines, a file-based app run with dotnet run scripts/diag.cs. " +
+                    "No project file, which is good. Everything else has to live in this one file, and only dnedry has ever changed it.",
                     "#!/usr/bin/env dotnet", "#:package"),
                 new("Its job is three lines",
                     "Print a header, show the last five commits, print the runtime table. That's the whole diagnostic.",
@@ -64,19 +56,22 @@ public static class Inc001
                     "// ▶ INC-001b: move this class", "AnsiConsole.Write(table);"),
             ], pages.Next()),
 
+            new ConsoleBeat(title, "Before", "Running it, as shipped",
+                ConsoleCapture.Load("capture/Inc001/diag-before.txt"), null, pages.Next()),
+
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
                 new FileFix(before.Excerpt("#!/usr/bin/env dotnet", "Diagnostics.PrintRuntimeInfo();"), after,
                     new("Process.RunAndCaptureTextAsync", "New in .NET 11",
                         "One call starts the process, captures both streams and waits. The result has StandardOutput, StandardError " +
                         "and ExitCode. #:include brings in a second file.",
-                        new Rectangle(28, 26, 90, 6)), Tab: "diag.cs"),
+                        new Rectangle(28, 23, 90, 6)), Tab: "diag.cs"),
                 new FileFix(before.From("static async Task<string> RunAndCaptureAsync"), SourceFile.Empty(ScriptPath), Tab: "diag.cs (helpers)"),
                 new FileFix(SourceFile.Empty(HelpersPath), helpers,
                     new("static class Diagnostics", "#:include",
                         "A file-based app can now span files: #:include diag-helpers.cs compiles this one in. The class is unchanged; it " +
                         "just has its own file.",
-                        new Rectangle(28, 30, 90, 6))),
+                        new Rectangle(28, 27, 90, 6))),
             ], pages.Next()),
 
             new ConsoleBeat(title, "After", "Same diagnostic, a fraction of the code",
@@ -84,7 +79,7 @@ public static class Inc001
                 new("Fence controller", "Identical output",
                     $"Same commits, same runtime table. The script went from {total} lines in one file to {after.Lines.Count} plus a " +
                     $"{helpers.Lines.Count}-line helpers file, and the part only dnedry understood is gone.",
-                    new Rectangle(28, 32, 90, 6)),
+                    new Rectangle(28, 27, 90, 6)),
                 pages.Next()),
 
             new ResolutionBeat(finding, () => new(

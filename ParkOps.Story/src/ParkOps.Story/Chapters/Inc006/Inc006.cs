@@ -53,15 +53,15 @@ public static class Inc006
                 new("var restricted = new HashSet", "Case-sensitive",
                     $"The restricted list is upper-case and the set uses the default, case-sensitive comparer. The sensor firmware reports " +
                     $"\"{zone}\", so the raptor paddock never matches.",
-                    new Rectangle(40, 33, 78, 6)),
+                    new Rectangle(40, 27, 78, 6)),
                 new("var cell = map.Cells[y * map.Width + x];", "Hand-rolled indexing",
                     "The mapping vendor's ParkMap has no indexer, so every caller does the y * Width + x arithmetic itself. " +
                     "Get the order wrong and you search the wrong cell.",
-                    new Rectangle(40, 33, 78, 6)),
+                    new Rectangle(40, 27, 78, 6)),
                 new("if (foundThem) continue;", "The search never stops",
                     "break only leaves the inner loop. The flag meant to stop the outer one says continue, which moves to the next row. " +
                     "Every remaining row gets scanned.",
-                    new Rectangle(40, 33, 78, 6)),
+                    new Rectangle(40, 27, 78, 6)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
@@ -69,11 +69,11 @@ public static class Inc006
                 new FileFix(before, after, new("break search;", "Three C# 15 features, three lines",
                     "with(...) passes the comparer to the collection expression. map[x, y] reads through an extension indexer. " +
                     "break search; leaves both loops in one move: no flag.",
-                    new Rectangle(40, 31, 78, 6))),
+                    new Rectangle(40, 27, 78, 6))),
                 new FileFix(SourceFile.Empty(ExtensionsPath), extensions, new("public Cell this[int x, int y]", "Extension indexer",
                     "An extension block can now declare an indexer. ParkMap is the vendor's type and we can't change it, " +
                     "but every caller in ParkOps gets map[x, y].",
-                    new Rectangle(40, 22, 78, 6))),
+                    new Rectangle(40, 19, 78, 6))),
             ], pages.Next()),
 
             new GuestExhibit(finding, CodePath.After, pages.Next()),

@@ -25,7 +25,7 @@ ParkOps.Story/
   ParkOps.Story.slnx
   src/Before/                      # the park's original code, every incident in place (see its README)
   src/ParkOps.Story/
-    Program.cs                     # SadConsole host, 128x44 cells, same font as the control room
+    Program.cs                     # SadConsole host, 128x36 cells (16:9), same font as the control room
     Story/                         # engine: StoryScreen (navigation, transitions, story bar), Beat, Chapter, Deck
     Rendering/                     # Canvas (cells + 2x overlay for big type), Brand, ReportPage, Workstation
     Code/                          # SourceFile (embedded source), CSharpTokenizer, LineDiff, CodeView
@@ -69,6 +69,16 @@ resolution says so and stamps PARTIAL; the closing slide and the index show it.
 
 A **Walkthrough** page can stand in for Root cause (lesson 1): the whole before file on the left, scrolled to and
 highlighted at one stop per step, with a numbered narrative on the right that ticks off the earlier stops.
+
+Lesson-specific pages:
+
+- **Lesson 1, Fences** (`Chapters/Inc001/FencesBeat`): orientation before any code. A live diagram of the ten fenced
+  paddocks, the substation and fence controller with current running, and the control room's `scripts/diag.cs`; the
+  second step explains the script is what the team runs to get the fences back online in an outage. Lesson 1 then
+  goes straight to the script walkthrough, then the script running, with no separate finding page.
+- **Lesson 2, Concept** (`Chapters/Inc002/JoinConceptBeat`): between root cause and fix. Two overlapping sets (roster,
+  motion grid) and a six-tag sample: the lists, what Join keeps (the overlap), what FullJoin keeps (all three regions,
+  the missing side null), then the park's real counts.
 
 ### Switching the active code path
 
@@ -132,9 +142,13 @@ wordmark: SadConsole can't render League Spartan.
 
 ## Controls
 
-`→` `Space` `PgDn` next · `←` `Backspace` `PgUp` back, straight through the deck across lessons · `Home` index
-(`↑`/`↓` pick, `→`/`Enter` open) · `TAB` flip before/after on an exhibit · `R` replay the slide · `1`-`9`, `0` open a
-lesson at its section slide · `ESC` quit.
+`→` `Space` next · `←` `Backspace` back, straight through the deck across lessons · `PgDn` next lesson · `PgUp` start
+of this lesson, then the previous one · `Home` index (`↑`/`↓` pick, `→`/`Enter` open) · `TAB` flip before/after on an
+exhibit · `R` replay the slide · `1`-`9`, `0` open a lesson at its section slide · `F11` fullscreen · `ESC` quit.
+
+The canvas is 128x36 cells, exactly 16:9 at the 8x16 font, so a 16:9 projector shows it edge to edge. That's 8 rows
+fewer than the original 128x44, which buys about 22% larger text on a 1080p screen. Pages lay out on the rows named in
+`ReportPage`; exhibits get a 72x22 screen.
 Going back lands on the previous page's final state, with no animation.
 
 ## Milestones

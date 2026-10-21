@@ -49,14 +49,14 @@ public static class Inc004
                 new("_                                                  =>", "Unknown means herbivore",
                     "Dinosaur is abstract, so any assembly can derive from it and this switch can't be exhaustive. Anything it " +
                     "doesn't list, including species it has never seen, falls to _ and gets greens.",
-                    new Rectangle(28, 26, 90, 7)),
+                    new Rectangle(28, 23, 90, 7)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
                 new FileFix(dinosaur, closedOnly, new("public closed record Dinosaur", "Closed",
                     "A closed type can only be derived from in its own assembly. Core now owns the list of species.",
-                    new Rectangle(28, 24, 90, 6))),
+                    new Rectangle(28, 21, 90, 6))),
             ], pages.Next()),
 
             new ConsoleBeat(title, "Build", "The lab's species stops compiling",
@@ -64,20 +64,20 @@ public static class Inc004
                 new("error CS9382", "That's the point",
                     "The plugin can no longer invent a species. Procompsognathus has to be declared in Core, where the feeding " +
                     "planner can see it, and reviewed like every other species.",
-                    new Rectangle(28, 30, 90, 6)),
+                    new Rectangle(28, 27, 90, 6)),
                 pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
                 new FileFix(closedOnly, SourceFile.Load("after/Inc004/Dinosaur.cs", DinosaurPath), new("public record Procompsognathus", "Declared in Core",
                     "The compy moves into Core, as a carnivore. The lab can still breed them; it just can't define them.",
-                    new Rectangle(28, 24, 90, 6))),
+                    new Rectangle(28, 21, 90, 6))),
                 new FileFix(lab, SourceFile.Load("after/Inc004/WuLab.cs", LabPath)),
                 new FileFix(planner, SourceFile.Load("after/Inc004/FeedingPlanner.cs", PlannerPath), new("Procompsognathus                                  =>",
                     "Exhaustive, no discard",
                     "With the hierarchy closed the compiler knows every species, so the switch lists them all and has no _ arm. " +
                     "A new species is a compile warning until someone plans its diet.",
-                    new Rectangle(28, 24, 90, 7))),
+                    new Rectangle(28, 21, 90, 7))),
             ], pages.Next()),
 
             new FeedingExhibit(finding, CodePath.After, pages.Next()),

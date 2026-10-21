@@ -31,31 +31,31 @@ public sealed class ResolutionBeat(Finding finding, Func<Outcome> outcome, strin
         report.Frame(finding.LessonLabel, page);
         var result = measured ??= outcome();
 
-        report.Kicker(ReportPage.Left, 6, $"{finding.LessonLabel}  ·  Resolution  ·  {finding.Id}");
-        report.Heading(ReportPage.Left, 8, finding.Feature);
-        var x = report.PlatformPill(ReportPage.Left, 11, finding.Platform);
-        x = report.SeverityPill(x + 1, 11, finding.Severity);
-        if (!frame.Reached(1)) report.Pill(x + 1, 11, "OPEN", Brand.DarkGray);
-        else if (result.Partial) report.Pill(x + 1, 11, "PARTIAL", Brand.Beige, Brand.Ink);
-        else report.Pill(x + 1, 11, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
+        report.Kicker(ReportPage.Left, ReportPage.KickerRow, $"{finding.LessonLabel}  ·  Resolution  ·  {finding.Id}");
+        report.Heading(ReportPage.Left, ReportPage.HeadingRow, finding.Feature);
+        var x = report.PlatformPill(ReportPage.Left, 7, finding.Platform);
+        x = report.SeverityPill(x + 1, 7, finding.Severity);
+        if (!frame.Reached(1)) report.Pill(x + 1, 7, "OPEN", Brand.DarkGray);
+        else if (result.Partial) report.Pill(x + 1, 7, "PARTIAL", Brand.Beige, Brand.Ink);
+        else report.Pill(x + 1, 7, $"{Glyphs.Check} RESOLVED", Brand.GreenShade);
 
-        Card(canvas, report, new Rectangle(ReportPage.Left, 14, 54, 9), "Before", result.Before, result.BeforeCaption, Brand.Red);
-        Card(canvas, report, new Rectangle(ReportPage.Left + 58, 14, 54, 9), "After", result.After, result.AfterCaption, result.Partial ? Brand.Red : Brand.Green);
+        Card(canvas, report, new Rectangle(ReportPage.Left, 10, 54, 9), "Before", result.Before, result.BeforeCaption, Brand.Red);
+        Card(canvas, report, new Rectangle(ReportPage.Left + 58, 10, 54, 9), "After", result.After, result.AfterCaption, result.Partial ? Brand.Red : Brand.Green);
 
-        report.Kicker(ReportPage.Left, 26, "Change");
-        report.Paragraph(ReportPage.Left, 27, 70, change, Brand.Ink);
-        report.Kicker(ReportPage.Left, 31, "Recommendation");
-        report.Paragraph(ReportPage.Left, 32, 70, recommendation, Brand.Ink);
+        var y = report.Paragraph(ReportPage.Left, 22, 70, change, Brand.Ink);
+        report.Kicker(ReportPage.Left, 21, "Change");
+        report.Kicker(ReportPage.Left, y + 1, "Recommendation");
+        report.Paragraph(ReportPage.Left, y + 2, 70, recommendation, Brand.Ink);
 
-        report.Kicker(ReportPage.Left + 80, 26, "Fixed with");
-        var pill = report.PlatformPill(ReportPage.Left + 80, 27, finding.Platform);
-        report.Pill(pill + 1, 27, finding.Feature, Brand.Black);
+        report.Kicker(ReportPage.Left + 80, 21, "Fixed with");
+        var pill = report.PlatformPill(ReportPage.Left + 80, 22, finding.Platform);
+        report.Pill(pill + 1, 22, Workstation.Clip(finding.Feature, ReportPage.Right - pill - 3), Brand.Black);
 
         if (frame.Reached(1))
         {
             Findings.Resolved.Add(finding.Id);
             if (result.Partial) Findings.Partial.Add(finding.Id); else Findings.Partial.Remove(finding.Id);
-            report.Stamp(ReportPage.Left + 80, 31, result.Partial ? "PARTIAL" : "RESOLVED", result.Partial ? Brand.Red : Brand.GreenShade, frame.Since(1));
+            report.Stamp(ReportPage.Left + 80, 25, result.Partial ? "PARTIAL" : "RESOLVED", result.Partial ? Brand.Red : Brand.GreenShade, frame.Since(1));
         }
     }
 

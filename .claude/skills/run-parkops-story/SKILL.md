@@ -43,7 +43,7 @@ Use this after any visual change. It catches crashes on every page too: the run 
 ## 2b. Drive the real window (keys, TAB, navigation)
 
 Use `scripts/drive.ps1`. It launches the exe, presses real keys and screenshots the window's client area
-(1024x704 at default size). Run it from PowerShell:
+(1024x576 at default size: the canvas is 128x36 cells, 16:9). Run it from PowerShell:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/run-parkops-story/scripts/drive.ps1 `
@@ -68,8 +68,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/run-parkops-s
 
 The deck is one straight line: title (2 steps) → each lesson (intro slide, then its pages) → closing (2 steps) → index.
 `right` next step/slide and `left` back, across lesson boundaries. `tab` flips before/after code on an exhibit, `home`
-opens the index (`up`/`down` pick, `enter` open), `r` replays the slide, `1`-`9`, `0` open a lesson at its intro
-slide, `esc` quits.
+opens the index (`up`/`down` pick, `enter` open), `pgdn` jumps to the next lesson's intro and `pgup` to the start of
+this lesson (then the previous one), `r` replays the slide, `1`-`9`, `0` open a lesson at its intro slide, `esc` quits.
+`F11` toggles fullscreen; don't press it while driving, since screenshots assume the default window.
 
 ## Where the code is
 

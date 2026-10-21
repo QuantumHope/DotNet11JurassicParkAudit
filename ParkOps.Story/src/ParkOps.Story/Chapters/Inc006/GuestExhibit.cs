@@ -98,7 +98,7 @@ public sealed partial class GuestExhibit(Finding finding, CodePath initial, Page
         foreach (var (index, cell) in map.Cells.Index())
         {
             var x = area.X + cell.X * 2;
-            var y = area.Y + 2 + cell.Y;
+            var y = area.Y + 1 + cell.Y;
             var restrictedRow = cell.Zone == map.Cells[guest].Zone;
             var ground = restrictedRow ? new Color(48, 14, 14) : Palette.Background;
             if (index == guest && index < visited)
@@ -111,7 +111,7 @@ public sealed partial class GuestExhibit(Finding finding, CodePath initial, Page
                 ws.Print(x, y, $"{Cp437.MiddleDot} ", Palette.Dim, ground);
         }
 
-        var legend = area.Y + 3 + map.Height;
+        var legend = area.Y + 1 + map.Height;
         ws.Print(area.X, legend, $"{Square}", Palette.AmberDim);
         ws.Print(area.X + 2, legend, "scanned", Palette.Dim);
         ws.Print(area.X + 11, legend, $"{Square}", Palette.Bad);

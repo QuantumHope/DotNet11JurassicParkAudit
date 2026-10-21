@@ -22,17 +22,17 @@ public sealed class LessonIntroBeat(Finding finding) : Beat
         canvas.Clear(Brand.Black);
         var elapsed = frame.Elapsed;
 
-        Slides.Kicker(canvas, 10, 6, $"Lesson {finding.Lesson:00} of {Findings.All.Length:00}", Brand.Green);
-        canvas.Big(10, 10, finding.Feature, Slides.FadeIn(Brand.TrueWhite, elapsed, 0));
+        Slides.Kicker(canvas, 10, 4, $"Lesson {finding.Lesson:00} of {Findings.All.Length:00}", Brand.Green);
+        canvas.Big(10, 8, finding.Feature, Slides.FadeIn(Brand.TrueWhite, elapsed, 0));
 
         var report = new ReportPage(canvas);
-        report.PlatformPill(10, 14, finding.Platform);
+        report.PlatformPill(10, 11, finding.Platform);
 
-        canvas.Fill(new Rectangle(10, 18, 1, 6), Brand.Green, Brand.Green);
-        canvas.Print(13, 18, finding.Incident.Trim('"').ToUpperInvariant(), Slides.FadeIn(Brand.Beige, elapsed, 300), Brand.Black);
-        Slides.Type(canvas, 13, 20, 90, finding.Summary, Brand.WhiteShade, elapsed - TimeSpan.FromMilliseconds(450));
-        canvas.Print(13, 23, $"{finding.Id}  ·  reported by {finding.ReportedBy}, {finding.Role}", Slides.FadeIn(Brand.LineNumber, elapsed, 700), Brand.Black);
+        canvas.Fill(new Rectangle(10, 14, 1, 6), Brand.Green, Brand.Green);
+        canvas.Print(13, 14, finding.Incident.Trim('"').ToUpperInvariant(), Slides.FadeIn(Brand.Beige, elapsed, 300), Brand.Black);
+        Slides.Type(canvas, 13, 16, 90, finding.Summary, Brand.WhiteShade, elapsed - TimeSpan.FromMilliseconds(450));
+        canvas.Print(13, 19, $"{finding.Id}  ·  reported by {finding.ReportedBy}, {finding.Role}", Slides.FadeIn(Brand.LineNumber, elapsed, 700), Brand.Black);
 
-        Slides.Progress(canvas, 10, 36, finding.Lesson);
+        Slides.Progress(canvas, 10, 29, finding.Lesson);
     }
 }

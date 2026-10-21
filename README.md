@@ -5,8 +5,11 @@ slideshow. It opens on a title slide, then takes the ten lessons in order, one f
 original code and the fixed code side by side, and closes with the report to the board.
 
 ```bash
-dotnet run --project ParkOps.Story/src/ParkOps.Story
+dotnet run --project ParkOps.Story/src/ParkOps.Story -- --fullscreen
 ```
+
+The screen is 128x36 characters, exactly 16:9, so fullscreen on a 16:9 display or projector fills it edge to edge with
+text as large as the layout allows. `F11` toggles fullscreen at any time; drop `--fullscreen` to start in a window.
 
 Needs the .NET 11 RC2 SDK (`11.0.100-rc.2.26504.105`, pinned in `ParkOps.Story/global.json`). Ollama is optional:
 lesson 10 uses a labelled stand-in when it isn't running.
@@ -27,17 +30,24 @@ lesson 10 uses a labelled stand-in when it isn't running.
 | 10 | Failover chat client | Microsoft.Extensions.AI | The narrator went silent |
 
 Each lesson opens on its own section slide, then runs **finding → before → root cause → fix → after → resolution**.
-Lesson 1's root cause is a walkthrough of the whole script, one flaw at a time.
+Two lessons add a page:
+
+- **Lesson 1** starts with an orientation page on the perimeter fences (a live diagram, and why `scripts/diag.cs`
+  matters in an outage), then reads the whole script one flaw at a time before running it.
+- **Lesson 2** draws the concept before the fix: what `Join` keeps versus what `FullJoin` keeps, as overlapping sets
+  and as the actual rows.
 
 ## Keys
 
 | Where | Keys |
 |---|---|
-| Anywhere | `→` `Space` `PgDn` next · `←` `Backspace` `PgUp` back · `R` replay the slide · `ESC` quit |
+| Anywhere | `→` `Space` next · `←` `Backspace` back · `R` replay the slide · `F11` fullscreen · `ESC` quit |
+| Lessons | `PgDn` next lesson · `PgUp` start of this lesson, then the previous one |
 | Exhibits | `TAB` flip between the original and the fixed code |
 | Jumping | `Home` index of lessons (`↑` `↓` pick, `Enter` open) · `1`-`9`, `0` straight to a lesson |
 
-Next and back run straight through the deck, across lessons: title → lessons 1-10 → closing → index.
+Next and back run straight through the deck, across lessons: title → lessons 1-10 → closing → index. A presentation
+clicker that sends PgUp/PgDn will jump lessons; set it to send the arrow keys to step through slides.
 
 ## What's where
 

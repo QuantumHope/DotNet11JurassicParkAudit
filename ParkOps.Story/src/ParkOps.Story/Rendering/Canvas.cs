@@ -5,15 +5,16 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Rendering;
 
 /// <summary>
-/// What a beat draws on: the 128x44 cell surface, plus a transparent overlay at twice the font size
-/// for big headings. Big text sits on the overlay's 64x22 grid, so it lands on even cell coordinates.
+/// What a beat draws on: the 128x36 cell surface (1024x576 px, exactly 16:9, so it fills a projector with no bars and
+/// each character is as large as the screen allows), plus a transparent overlay at twice the font size for big
+/// headings. Big text sits on the overlay's 64x18 grid, so it lands on even cell coordinates.
 /// </summary>
 public sealed class Canvas(ICellSurface surface, ICellSurface big)
 {
     public const int Width = 128;
-    public const int Height = 44;
+    public const int Height = 36;
 
-    /// <summary>Row 43 is the story bar; beats draw above it.</summary>
+    /// <summary>Row 35 is the story bar; beats draw above it.</summary>
     public const int ContentHeight = Height - 1;
 
     public ICellSurface Surface => surface;

@@ -41,7 +41,7 @@ public sealed class FixBeat(string chapter, string feature, IReadOnlyList<FileFi
         var report = new ReportPage(frame.Canvas);
         var canvas = frame.Canvas;
         report.Frame("The fix", page);
-        report.Kicker(CodeBeat.Pane.X, 6, $"{chapter}  ·  The fix");
+        report.Kicker(CodeBeat.Pane.X, ReportPage.KickerRow, $"{chapter}  ·  The fix");
 
         var (index, showNote) = plan[frame.Step];
         var file = files[index];
@@ -103,7 +103,7 @@ public sealed class FixBeat(string chapter, string feature, IReadOnlyList<FileFi
         if (t >= TypeFrom || added || deleted)
         {
             var pill = $" {feature} ";
-            canvas.Print(CodeBeat.Pane.MaxExtentX - pill.Length + 1, 6, pill, Brand.TrueWhite, Brand.Blue);
+            canvas.Print(CodeBeat.Pane.MaxExtentX - pill.Length + 1, ReportPage.KickerRow, pill, Brand.TrueWhite, Brand.Blue);
         }
 
         if (showNote && file.Note is { } note)

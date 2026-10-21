@@ -9,8 +9,14 @@ public sealed class ReportPage(Canvas canvas)
 {
     public const int Left = 8;
     public const int Right = Canvas.Width - 8;
-    public const int Top = 6;
-    public const int FooterRow = 41;
+
+    // Rows on a 36-row page: a one-row header band and its green rule, the kicker, a big (2-row) heading, the body,
+    // and a one-line footer above the story bar.
+    public const int KickerRow = 3;
+    public const int HeadingRow = 4;
+    public const int Top = 7;
+    public const int Bottom = 33;
+    public const int FooterRow = 34;
     public const string ReportTitle = "ParkOps Post-Incident Technical Assessment";
 
     public Canvas Canvas => canvas;
@@ -19,17 +25,16 @@ public sealed class ReportPage(Canvas canvas)
     public Rectangle Frame(string section, Story.Page page)
     {
         canvas.Clear(Brand.Paper);
-        canvas.Fill(new Rectangle(0, 0, Canvas.Width, 3), Brand.White, Brand.Black);
-        Wordmark(3, 1, onDark: true);
+        canvas.Fill(new Rectangle(0, 0, Canvas.Width, 1), Brand.White, Brand.Black);
+        Wordmark(3, 0, onDark: true);
         var right = $"{ReportTitle}  {Cp437.SingleVertical}  {section.ToUpperInvariant()}";
-        canvas.Print(Canvas.Width - right.Length - 3, 1, right, Brand.Beige, Brand.Black);
-        canvas.Fill(new Rectangle(0, 3, Canvas.Width, 1), Brand.Green, Brand.Paper, Glyphs.UpperHalf);
+        canvas.Print(Canvas.Width - right.Length - 3, 0, right, Brand.Beige, Brand.Black);
+        canvas.Fill(new Rectangle(0, 1, Canvas.Width, 1), Brand.Green, Brand.Paper, Glyphs.UpperHalf);
 
-        canvas.Fill(new Rectangle(Left, FooterRow, Right - Left, 1), Brand.Rule, Brand.Paper, Cp437.SingleHorizontal);
-        canvas.Print(Left, FooterRow + 1, "Prepared for InGen Corporation by Leading EDJE  ·  Confidential", Brand.Muted, Brand.Paper);
+        canvas.Print(Left, FooterRow, "Prepared for InGen Corporation by Leading EDJE  ·  Confidential", Brand.Muted, Brand.Paper);
         var pageText = $"{page.Number} / {page.Of.Total}";
-        canvas.Print(Right - pageText.Length, FooterRow + 1, pageText, Brand.Muted, Brand.Paper);
-        return new Rectangle(Left, Top, Right - Left, FooterRow - Top - 1);
+        canvas.Print(Right - pageText.Length, FooterRow, pageText, Brand.Muted, Brand.Paper);
+        return new Rectangle(Left, Top, Right - Left, Bottom - Top + 1);
     }
 
     /// <summary>LEADING EDJE, with the green edge mark.</summary>

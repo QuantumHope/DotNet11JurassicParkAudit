@@ -75,7 +75,7 @@ public sealed partial class MaintenanceExhibit(Finding finding, CodePath initial
         else ws.Readout(readout, "MAINTENANCE", "Fence with the most breaches", area, revealFrom, alertOn: true);
 
         DrawBreaches(ws, new Rectangle(inner.X + 38, inner.Y, inner.Width - 39, 12), readout);
-        var gauge = DrawGauge(ws, new Rectangle(inner.X + 1, inner.Y + 15, inner.Width - 2, 8), clock);
+        var gauge = DrawGauge(ws, new Rectangle(inner.X + 1, inner.Y + 13, inner.Width - 2, 8), clock);
 
         if (clock.Busy || readout is null) return new("QUERYING", ws.Blink ? Palette.Amber : Palette.AmberDim, []);
         List<Rectangle> marks = [Row(area.X, area.Y + 4, area.Width), gauge];

@@ -5,8 +5,10 @@ using SadConsole;
 using SadConsole.Configuration;
 
 // dotnet run -- [--lesson N]                open lesson N straight away (2 for LINQ FullJoin)
+// dotnet run -- --fullscreen                start borderless fullscreen (F11 toggles it any time)
 // dotnet run -- --capture DIR [--lesson N]  play the report (or one lesson) unattended, saving a PNG of every step
 string? Option(string name) => args.SkipWhile(a => a != name).Skip(1).FirstOrDefault();
+var fullscreen = args.Contains("--fullscreen");
 int? lesson = int.TryParse(Option("--lesson"), out var n) ? n : null;
 var capture = Option("--capture") is { } directory ? Path.GetFullPath(directory) : null;
 
@@ -27,12 +29,13 @@ Settings.WindowTitle = "Leading EDJE // ParkOps Assessment";
 Settings.AllowWindowResize = true;
 Settings.ResizeMode = Settings.WindowResizeOptions.Fit;
 
+// The canvas is 16:9, so on a 16:9 display Fit scales it edge to edge with no bars.
 var startup = new Builder()
     .SetWindowSizeInCells(Canvas.Width, Canvas.Height)
     .ConfigureFonts(true)
     .SetStartingScreen(_ =>
     {
-        var screen = new StoryScreen(chapters, startAt);
+        var screen = new StoryScreen(chapters, startAt) { StartFullScreen = fullscreen && capture is null };
         if (capture is not null)
         {
             if (lesson is not null) screen.StopAfterLessons = 1;

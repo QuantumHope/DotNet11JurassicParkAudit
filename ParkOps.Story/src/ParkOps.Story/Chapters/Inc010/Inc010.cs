@@ -40,7 +40,7 @@ public static class Inc010
             [
                 new("IChatClient narrator = new OllamaApiClient(ollama, primaryModel);", "One model, no plan B",
                     "The narrator talks to exactly one client. backupModel is parsed from the command line, then never used.",
-                    new Rectangle(28, 31, 90, 6)),
+                    new Rectangle(28, 27, 90, 6)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
@@ -48,7 +48,7 @@ public static class Inc010
                 new FileFix(before, after, new("new OrderedFailoverChatClient", "Failover, in the client pipeline",
                     "OrderedFailoverChatClient wraps the clients in order and moves to the next when one fails. It's experimental " +
                     "(MEAI001), and it isn't tied to .NET 11: MEAI 10.11 runs on .NET 10 too.",
-                    new Rectangle(28, 31, 90, 6))),
+                    new Rectangle(28, 27, 90, 6))),
             ], pages.Next()),
 
             new NarratorExhibit(finding, CodePath.After, pages.Next()),

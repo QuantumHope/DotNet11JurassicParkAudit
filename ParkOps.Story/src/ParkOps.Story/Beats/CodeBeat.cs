@@ -20,7 +20,7 @@ public enum NoteLeader { Gutter, Line }
 /// </summary>
 public sealed class CodeBeat(string chapter, SourceFile file, IReadOnlyList<CodeNote> notes, Page page) : Beat
 {
-    public static readonly Rectangle Pane = new(6, 8, 116, 32);
+    public static readonly Rectangle Pane = new(6, 5, 116, 28);
 
     public override string Label => "Cause";
 
@@ -30,7 +30,7 @@ public sealed class CodeBeat(string chapter, SourceFile file, IReadOnlyList<Code
     {
         var report = new ReportPage(frame.Canvas);
         report.Frame("Root cause", page);
-        report.Kicker(Pane.X, 6, $"{chapter}  ·  Root cause  ·  as shipped");
+        report.Kicker(Pane.X, ReportPage.KickerRow, $"{chapter}  ·  Root cause  ·  as shipped");
 
         var flagged = notes.Select(n => file.Find(n.Line)).ToHashSet();
         var flagOn = frame.Elapsed > TimeSpan.FromMilliseconds(500);

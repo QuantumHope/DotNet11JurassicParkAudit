@@ -74,6 +74,9 @@ public sealed class StoryScreen : ScreenSurface, IStory
     /// <summary>Rehearsal of a single lesson: stop at the end of this many lessons.</summary>
     public int? StopAfterLessons { get; set; }
 
+    /// <summary>--fullscreen: switch to fullscreen on the first frame, once the window exists (same as F11).</summary>
+    public bool StartFullScreen { get; set; }
+
     /// <summary>A file-name-friendly name for where we are, e.g. "05-INC-002-Fix-2".</summary>
     public string Place => $"{current + 1:00}-{Chapter.Id}-{Beat.Label}-{step + 1}";
 
@@ -122,6 +125,28 @@ public sealed class StoryScreen : ScreenSurface, IStory
 
     public bool HasLesson(int lesson) => beats.Any(b => b.Chapter.Number == lesson);
 
+    /// <summary>PAGE DOWN: the next lesson's section slide (from the title, lesson 1; after the last lesson, the closing slide).</summary>
+    private void NextLesson()
+    {
+        var next = beats.FindIndex(current + 1, b => b.Chapter != Chapter && b.Chapter.Number is not null);
+        if (next < 0) next = beats.FindIndex(b => b.Chapter.Id == "Closing");
+        if (next > current) Go(next, forward: true);
+    }
+
+    /// <summary>PAGE UP: back to the start of this lesson, or from its section slide to the previous lesson's.</summary>
+    private void PreviousLesson()
+    {
+        var start = beats.FindIndex(b => b.Chapter == Chapter);
+        if (Chapter.Number is not null && (current > start || step > 0))
+        {
+            Go(start, forward: true);
+            return;
+        }
+        var previous = beats.FindLastIndex(start - 1 < 0 ? 0 : start - 1, b => b.Chapter.Number is not null);
+        if (previous < 0) Go(0, forward: true);
+        else Go(beats.FindIndex(b => b.Chapter == beats[previous].Chapter), forward: true);
+    }
+
     public void OpenLesson(int lesson)
     {
         var index = beats.FindIndex(b => b.Chapter.Number == lesson);
@@ -130,13 +155,16 @@ public sealed class StoryScreen : ScreenSurface, IStory
 
     public override bool ProcessKeyboard(Keyboard keyboard)
     {
-        if (keyboard.IsKeyPressed(Keys.Right) || keyboard.IsKeyPressed(Keys.Space) || keyboard.IsKeyPressed(Keys.PageDown) || keyboard.IsKeyPressed(Keys.Enter)) Next();
-        else if (keyboard.IsKeyPressed(Keys.Left) || keyboard.IsKeyPressed(Keys.Back) || keyboard.IsKeyPressed(Keys.PageUp)) Back();
+        if (keyboard.IsKeyPressed(Keys.Right) || keyboard.IsKeyPressed(Keys.Space) || keyboard.IsKeyPressed(Keys.Enter)) Next();
+        else if (keyboard.IsKeyPressed(Keys.Left) || keyboard.IsKeyPressed(Keys.Back)) Back();
+        else if (keyboard.IsKeyPressed(Keys.PageDown)) NextLesson();
+        else if (keyboard.IsKeyPressed(Keys.PageUp)) PreviousLesson();
         else if (keyboard.IsKeyPressed(Keys.Up)) Beat.HandleKey(Keys.Up, this);
         else if (keyboard.IsKeyPressed(Keys.Down)) Beat.HandleKey(Keys.Down, this);
         else if (keyboard.IsKeyPressed(Keys.Home)) ToIndex(selectLesson: Chapter.Number ?? 1);
         else if (keyboard.IsKeyPressed(Keys.Tab)) Beat.Toggle();
         else if (keyboard.IsKeyPressed(Keys.R)) Replay();
+        else if (keyboard.IsKeyPressed(Keys.F11)) Game.Instance.ToggleFullScreen();
         else if (keyboard.IsKeyPressed(Keys.Escape)) Game.Instance.MonoGameInstance.Exit();
         else
         {
@@ -163,6 +191,11 @@ public sealed class StoryScreen : ScreenSurface, IStory
 
     public override void Update(TimeSpan delta)
     {
+        if (StartFullScreen)
+        {
+            StartFullScreen = false;
+            Game.Instance.ToggleFullScreen();
+        }
         delta *= TimeScale;
         now += delta;
         sinceFrame += delta;

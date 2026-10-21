@@ -47,11 +47,11 @@ public static class Inc005
                 new("var methods = new StackTrace()", "A live stack, of state machines",
                     "Each async method compiles to a state machine, so the frames on a live stack are <Method>d__N.MoveNext and " +
                     "the builder's plumbing. WhteRbt is on the stack, but only as its state machine's MoveNext.",
-                    new Rectangle(28, 31, 90, 7)),
+                    new Rectangle(28, 26, 90, 7)),
                 new("!m.DeclaringType.Name.StartsWith('<')", "Only methods people wrote",
                     "The audit won't report a compiler-generated type as the culprit, so with state machines there's no frame it can " +
                     "name: unknown. It runs before the first await, while the caller is still on the stack.",
-                    new Rectangle(28, 31, 90, 7)),
+                    new Rectangle(28, 26, 90, 7)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
@@ -60,7 +60,7 @@ public static class Inc005
                     new("runtime-async=on", "No C# changes",
                         "One property: the compiler emits async methods as runtime-async methods instead of state machines, and the " +
                         "runtime runs them. Stack frames become the methods themselves.",
-                        new Rectangle(28, 24, 90, 6))),
+                        new Rectangle(28, 21, 90, 6))),
             ], pages.Next()),
 
             new FenceExhibit(finding, CodePath.After, pages.Next()),

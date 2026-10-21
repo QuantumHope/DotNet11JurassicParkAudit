@@ -43,7 +43,7 @@ public sealed class ConsoleBeat(string chapter, string label, string title, Cons
         var report = new ReportPage(frame.Canvas);
         var canvas = frame.Canvas;
         report.Frame(title, page);
-        report.Kicker(CodeBeat.Pane.X, 6, $"{chapter}  ·  {title}");
+        report.Kicker(CodeBeat.Pane.X, ReportPage.KickerRow, $"{chapter}  ·  {title}");
 
         var pane = CodeBeat.Pane;
         canvas.Fill(new Rectangle(pane.X + 1, pane.MaxExtentY + 1, pane.Width, 1), Brand.Black, Brand.DarkGray, Cp437.LightShade);
@@ -63,7 +63,13 @@ public sealed class ConsoleBeat(string chapter, string label, string title, Cons
             {
                 var typeTime = TimeSpan.FromMilliseconds(text.Length / TypeCharsPerMs);
                 var shown = (int)Math.Clamp((frame.Elapsed - at).TotalMilliseconds * TypeCharsPerMs, 0, text.Length);
-                rows.Add(($"$ {text}", Brand.Cyan, at, shown + 2, false));
+                // Wrap long commands like output, typing across the wrapped parts in order.
+                var offset = 0;
+                foreach (var part in Workstation.Wrap($"$ {text}", width))
+                {
+                    rows.Add((part, Brand.Cyan, at, Math.Max(0, shown + 2 - offset), false));
+                    offset += part.Length;
+                }
                 at += typeTime + CommandPause;
                 continue;
             }
@@ -95,7 +101,7 @@ public sealed class ConsoleBeat(string chapter, string label, string title, Cons
             }
             var shown = text[..Math.Min(text.Length, typed)];
             canvas.Print(pane.X + 2, y, shown, color);
-            if (shown.Length < text.Length || (i == visible.Count - 1 && frame.Elapsed < at && (int)(frame.Now.TotalMilliseconds / 400) % 2 == 0))
+            if ((shown.Length > 0 && shown.Length < text.Length) ||(i == visible.Count - 1 && frame.Elapsed < at && (int)(frame.Now.TotalMilliseconds / 400) % 2 == 0))
                 canvas.Glyph(pane.X + 2 + shown.Length, y, Cp437.FullBlock, Brand.Green);
         }
 

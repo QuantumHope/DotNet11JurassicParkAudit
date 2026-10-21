@@ -7,7 +7,8 @@ public static class Brand
 {
     public static readonly Color Green = Hex(0x98C93D);
     public static readonly Color GreenShade = Hex(0x6FB03A);
-    public static readonly Color DarkGreen = Hex(0x6CA437);
+    // Darker than the site's #6CA437 so kickers and green text on paper stay readable on a projector (about 4.6:1).
+    public static readonly Color DarkGreen = Hex(0x4F7D22);
     public static readonly Color DarkGray = Hex(0x4D4E50);
     public static readonly Color Black = Hex(0x353535);
     public static readonly Color GrayShade = Hex(0x2A2A2A);
@@ -24,19 +25,22 @@ public static class Brand
     // Report pages
     public static readonly Color Paper = White;
     public static readonly Color Ink = Black;
-    public static readonly Color Muted = Hex(0x7A7B7D);
+    // Secondary text, darkened from #7A7B7D: captions and footers have to survive a washed-out projector.
+    public static readonly Color Muted = Hex(0x5C5D60);
     public static readonly Color Rule = Hex(0xD6D6D6);
 
     // Code view
     public static readonly Color CodeBackground = GrayShade;
     public static readonly Color CodeGutter = Black;
-    public static readonly Color LineNumber = Hex(0x85878A);
+    // Secondary text on dark backgrounds (gutters, terminal captions, slide footers), lifted from #85878A.
+    public static readonly Color LineNumber = Hex(0xA3A5A8);
     public static readonly Color CodeText = WhiteShade;
     public static readonly Color Keyword = Blue;
     public static readonly Color TypeName = VividBlue;
     public static readonly Color Method = Hex(0xF0DC9A);
     public static readonly Color StringLiteral = Green;
-    public static readonly Color Comment = Beige;
+    // Comments carry the ▶ INC markers the story points at, so they need to read at a distance too.
+    public static readonly Color Comment = Hex(0xD6C6C2);
     public static readonly Color Number = Cream;
     public static readonly Color Punctuation = Hex(0xB4B4B4);
     public static readonly Color RemovedBackground = Hex(0x5A2A1E);

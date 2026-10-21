@@ -44,15 +44,18 @@ public static class Inc002
                 new("expected.Join(", "Root cause",
                     "Join is an inner join. A sensor signal with no roster entry has nothing to match, so it's dropped " +
                     "before anything counts it. The query can only ever find animals it already expected.",
-                    new Rectangle(52, 24, 62, 7)),
+                    new Rectangle(52, 21, 62, 7)),
             ], pages.Next()),
+
+            // The idea, drawn, before the code changes: what each kind of join keeps.
+            new JoinConceptBeat(finding, roster.Count, tracked.Count, located, pages.Next()),
 
             new FixBeat(title, before, after, $"{finding.Platform}  ·  {finding.Feature}",
             [
                 new("expected.FullJoin(", "New in .NET 11",
                     "FullJoin keeps rows from both sides. Where there's no match, that side comes through as null, " +
                     "so a missing animal and an unknown signal both turn into rows you can report on.",
-                    new Rectangle(56, 29, 60, 7)),
+                    new Rectangle(56, 26, 60, 7)),
             ], pages.Next()),
 
             new CensusExhibit(finding, CodePath.After, pages.Next()),

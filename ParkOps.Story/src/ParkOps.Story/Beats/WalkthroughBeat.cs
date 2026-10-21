@@ -19,7 +19,7 @@ public sealed record WalkStop(string Title, string Text, string? From = null, st
 /// </summary>
 public sealed class WalkthroughBeat(string chapter, string title, SourceFile file, IReadOnlyList<WalkStop> stops, Page page) : Beat
 {
-    private static readonly Rectangle Pane = new(6, 8, 80, 32);
+    private static readonly Rectangle Pane = new(6, 5, 80, 28);
     private const int NotesX = 90;
     private const int NotesWidth = 32;
     private static readonly TimeSpan ScrollTime = TimeSpan.FromMilliseconds(350);
@@ -33,7 +33,7 @@ public sealed class WalkthroughBeat(string chapter, string title, SourceFile fil
         var report = new ReportPage(frame.Canvas);
         var canvas = frame.Canvas;
         report.Frame(title, page);
-        report.Kicker(Pane.X, 6, $"{chapter}  ·  {title}");
+        report.Kicker(Pane.X, ReportPage.KickerRow, $"{chapter}  ·  {title}");
 
         var stop = stops[frame.Step];
         var focus = Range(stop);

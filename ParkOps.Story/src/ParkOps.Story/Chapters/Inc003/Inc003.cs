@@ -46,7 +46,7 @@ public static class Inc003
                 new("_                =>", "The discard arm",
                     "MotionContact is an open base type, so the compiler can't know which wrappers exist and the switch needs a " +
                     "catch-all. DinosaurContact was added later and nobody added an arm: it lands in _, labelled a friendly guest.",
-                    new Rectangle(28, 28, 90, 7)),
+                    new Rectangle(28, 25, 90, 7)),
             ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
@@ -54,14 +54,14 @@ public static class Inc003
                 new FileFix(Before("MotionContact.cs"), After("MotionContact.cs"), new("public union MotionContact", "A union type",
                     "One line replaces the base record and four wrappers. A MotionContact is exactly one of these four types: " +
                     "the vendors' own records, unchanged.",
-                    new Rectangle(28, 16, 90, 6))),
+                    new Rectangle(28, 13, 90, 6))),
                 new FileFix(Before("ThreatAssessor.cs"), After("ThreatAssessor.cs"), new("Dinosaur d    =>", "Exhaustive, no discard",
                     "The switch matches the case types directly and covers all four, so it needs no _ arm. Carnivores are " +
                     "CRITICAL; everything else is named, not guessed.",
-                    new Rectangle(28, 28, 90, 6))),
+                    new Rectangle(28, 25, 90, 6))),
                 new FileFix(Before("SensorFeed.cs"), After("SensorFeed.cs"), new("new Velociraptor(\"V-07\")", "Implicit conversion",
                     "Each case type converts to the union implicitly, so the feed lists plain values with no wrappers.",
-                    new Rectangle(28, 34, 90, 5))),
+                    new Rectangle(28, 28, 90, 5))),
             ], pages.Next()),
 
             new ConsoleBeat(title, "Build", "A new kind of contact",
@@ -69,7 +69,7 @@ public static class Inc003
                 new("warning CS8509", "The compiler finds it",
                     "Add Unidentified to the union and the build points at every switch that doesn't handle it, by name. " +
                     "In the old code it would have been one more friendly guest.",
-                    new Rectangle(28, 31, 90, 6)),
+                    new Rectangle(28, 27, 90, 6)),
                 pages.Next()),
 
             new MotionExhibit(finding, CodePath.After, pages.Next()),
