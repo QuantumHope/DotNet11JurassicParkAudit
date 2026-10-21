@@ -53,7 +53,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/run-parkops-s
   exhibit. Each `right` is one step, not one page: pages with callouts take two.
 - Steps: key names (`right left up down enter tab esc home space back pgup pgdn r 0-9 f1-f5`), `rightx5`
   to repeat, `wait:N` seconds, `shot:NAME`.
-- `-AppArgs '--lesson','2'` starts straight inside a lesson.
+- `-AppArgs '--lesson','2'` (or `'--lesson 2'`) starts straight inside a lesson. Under `powershell -File` an array
+  arrives as one string; the script splits it on commas and spaces, so check that `s00` shows the lesson, not the summary.
 - End with `esc`. The script reports `exited: code 0` if the app quit, or stops it if it's still running.
 - **Non-obvious:** keys must be sent with real scan codes (`MapVirtualKey`). SDL ignores scan code 0 for
   Tab and Esc, although the arrow keys still work. The script handles this; don't swap in `SendKeys`.

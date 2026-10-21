@@ -19,6 +19,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# Under `powershell -File`, -AppArgs '--lesson','2' arrives as one string "--lesson,2"; split it back into arguments.
+$AppArgs = @($AppArgs | ForEach-Object { $_ -split '[,\s]+' } | Where-Object { $_ })
 Add-Type -AssemblyName System.Drawing
 Add-Type @'
 using System;
