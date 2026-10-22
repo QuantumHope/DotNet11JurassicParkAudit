@@ -88,7 +88,7 @@ Lesson-specific pages:
   versus reasons to wait. There's no root-cause code page: the lesson is about what the audit can see.
 - **Lesson 10, Fences** (`FencesBeat` again, offline): dark fences, a dead power path, and the callout that getting them
   back starts with `scripts/diag.cs`. Then straight to the script walkthrough, with no separate finding page.
-- **Encore** (`Beats/MalcolmBeat`), after the last lesson: Dr. Ian Malcolm reclining in ASCII, breathing, then a column
+- **Encore** (`Beats/MalcolmBeat`), after the last lesson: Dr. Ian Malcolm as an ASCII portrait, breathing, then a column
   of patched Jurassic Park lines.
 
 ### Switching the active code path

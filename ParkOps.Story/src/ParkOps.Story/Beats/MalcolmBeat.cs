@@ -5,7 +5,7 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Beats;
 
 /// <summary>
-/// The encore after the last lesson: Dr. Ian Malcolm, reclining, shirt open, breathing in ASCII. The second step types
+/// The encore after the last lesson: Dr. Ian Malcolm, as an ASCII portrait, breathing. The second step types
 /// in a column of Jurassic Park lines, lightly patched for the occasion.
 /// </summary>
 public sealed class MalcolmBeat : Beat
@@ -13,41 +13,30 @@ public sealed class MalcolmBeat : Beat
     private const int ArtX = 6, ArtY = 8, QuotesX = 74;
     private static readonly TimeSpan Breath = TimeSpan.FromMilliseconds(1100);
 
-    // Two frames of the same pose: chest in, chest out. Only the torso rows differ.
-    private static readonly string[] Exhale =
+    // A head-and-shoulders portrait: slicked hair, dark round glasses (# is drawn as a shaded block), open jacket. The
+    // shoulders rise a row on each breath in.
+    private static readonly string[] Head =
     [
-        @"            ___",
-        @"         .-'~~~'-.",
-        @"        /  _   _  \",
-        @"       |  (o)-(o)  |",
-        @"       |     >     |",
-        @"        \   ---   /",
-        @"         '-.___.-'",
-        @"           /  |\_______________________",
-        @"          /   | \ ~ ~ ~ ~ /  \          '------.______",
-        @"         |    |  \ ~ ~ ~ /    \                       '--.",
-        @"         |    |   \ ~ ~ /      )   ===================     )",
-        @"         |    |    '---'      /                  ______.-'",
-        @"     ____|____|______________/__________________/_______",
-        @"    |____________________________________________________|",
+        @"        .-~~~~~~~~-.",
+        @"      .'  ~~~~~~~~  '.",
+        @"     /                \",
+        @"    |   ___      ___   |",
+        @"    |  (###)----(###)  |",
+        @"    |   '-'   ,  '-'   |",
+        @"     \       (_       /",
+        @"      \    .____.    /",
+        @"       '.   '--'   .'",
+        @"         '-.____.-'",
     ];
 
-    private static readonly string[] Inhale =
+    private const string Neck = @"          |      |";
+
+    private static readonly string[] Shoulders =
     [
-        @"            ___",
-        @"         .-'~~~'-.",
-        @"        /  _   _  \",
-        @"       |  (o)-(o)  |",
-        @"       |     >     |",
-        @"        \   ---   /",
-        @"         '-.___.-'",
-        @"           /  |\________________________",
-        @"          /   | \ ~ ~ ~ ~ ~ /  \         '------.______",
-        @"         |    |  \ ~ ~ ~ ~ /     \                      '--.",
-        @"         |    |   \ ~ ~ ~ /       )  ===================     )",
-        @"         |    |    '-----'       /                ______.-'",
-        @"     ____|____|_______________/_________________/_______",
-        @"    |____________________________________________________|",
+        @"    __.--'\      /'--.__",
+        @"  .'      |\    /|      '.",
+        @" /    |   | \  / |   |    \",
+        @"|     |   |  \/  |   |     |",
     ];
 
     private static readonly (string Line, string Who)[] Quotes =
@@ -74,17 +63,18 @@ public sealed class MalcolmBeat : Beat
         Slides.Kicker(canvas, 10, 3, "One more thing", Brand.Green);
         canvas.Big(10, 4, "Life, uh, finds a way", Brand.TrueWhite);
 
-        // Breathing: the frames swap on a slow clock, and the chest hair shimmers with it.
+        // Breathing: on each breath in, the shoulders rise a row over the neck.
         var inhaling = (int)(frame.Now / Breath) % 2 == 1;
-        var art = inhaling ? Inhale : Exhale;
-        foreach (var (i, line) in art.Index())
-        {
-            var color = i is >= 8 and <= 11 ? Brand.Beige : Brand.Cream;
-            canvas.Print(ArtX, ArtY + i, line, Slides.FadeIn(color, frame.Elapsed, 100 + 60 * i), Brand.Black);
-        }
+        var x = ArtX + 8;
+        foreach (var (i, line) in Head.Index())
+            canvas.Print(x, ArtY + i, line.Replace('#', Glyphs.DarkShade), Slides.FadeIn(Brand.Cream, frame.Elapsed, 100 + 60 * i), Brand.Black);
+        var shoulders = ArtY + Head.Length + (inhaling ? 0 : 1);
+        if (!inhaling) canvas.Print(x, ArtY + Head.Length, Neck, Slides.FadeIn(Brand.Cream, frame.Elapsed, 700), Brand.Black);
+        foreach (var (i, line) in Shoulders.Index())
+            canvas.Print(x, shoulders + i, line, Slides.FadeIn(Brand.Beige, frame.Elapsed, 760 + 60 * i), Brand.Black);
         var sigh = inhaling ? "hm." : "hm. hm.";
-        canvas.Print(ArtX + 24, ArtY + 3, sigh.PadRight(8), Slides.FadeIn(Brand.LineNumber, frame.Elapsed, 900), Brand.Black);
-        canvas.Print(ArtX + 1, ArtY + art.Length + 1, "Dr. Ian Malcolm, reviewing the ParkOps codebase.",
+        canvas.Print(x + 27, ArtY + 4, sigh.PadRight(8), Slides.FadeIn(Brand.LineNumber, frame.Elapsed, 900), Brand.Black);
+        canvas.Print(ArtX + 1, ArtY + Head.Length + Shoulders.Length + 3, "Dr. Ian Malcolm, reviewing the ParkOps codebase.",
             Slides.FadeIn(Brand.LineNumber, frame.Elapsed, 800), Brand.Black);
 
         if (frame.Since(1) is var since && since >= TimeSpan.Zero)

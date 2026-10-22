@@ -45,7 +45,7 @@ Some lessons add pages:
 - **Lesson 10** opens on the same fences, offline, and why `scripts/diag.cs` matters in an outage, then reads the whole
   script one flaw at a time before running it.
 
-After the last lesson comes an encore (Dr. Ian Malcolm, reclining, in ASCII), then the closing report.
+After the last lesson comes an encore (Dr. Ian Malcolm as an ASCII portrait), then the closing report.
 
 ## Keys
 
