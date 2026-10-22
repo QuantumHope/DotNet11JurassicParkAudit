@@ -1,0 +1,14 @@
+# the original ParkOps code with INC-004 applied and Unidentified added to the union; .NET 11 RC2 SDK, 2026-10-18
+$ dotnet build src/ParkOps.Core
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+src\ParkOps.Core\Sensors\ThreatAssessor.cs(11,71): warning CS8509: The switch expression does not handle all possible values of its input type (it is not exhaustive). For example, the pattern 'ParkOps.Core.Sensors.Unidentified' is not covered.
+  ParkOps.Core -> src\ParkOps.Core\bin\Debug\net11.0\ParkOps.Core.dll
+
+Build succeeded.
+
+src\ParkOps.Core\Sensors\ThreatAssessor.cs(11,71): warning CS8509: The switch expression does not handle all possible values of its input type (it is not exhaustive). For example, the pattern 'ParkOps.Core.Sensors.Unidentified' is not covered.
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.18

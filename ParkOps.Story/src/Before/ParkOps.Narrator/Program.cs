@@ -7,7 +7,7 @@ var primaryModel = args.ElementAtOrDefault(0) ?? "llama3.2:1b";
 var backupModel = args.ElementAtOrDefault(1) ?? "qwen2.5:0.5b";
 var ollama = new Uri("http://localhost:11434");
 
-// ▶ INC-010: one model, no fallback (fix: OrderedFailoverChatClient)
+// ▶ INC-002: one model, no fallback (fix: OrderedFailoverChatClient)
 IChatClient narrator = new OllamaApiClient(ollama, primaryModel);
 
 try

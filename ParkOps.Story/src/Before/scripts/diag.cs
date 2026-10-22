@@ -1,6 +1,6 @@
 #!/usr/bin/env dotnet
 #:package Spectre.Console
-// ▶ INC-001b: helpers have to live in this one file (fix: #:include diag-helpers.cs)
+// ▶ INC-010b: helpers have to live in this one file (fix: #:include diag-helpers.cs)
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -9,7 +9,7 @@ using Spectre.Console;
 
 AnsiConsole.Write(new Rule("[yellow]PARK OPS // SYSTEM DIAGNOSTIC[/]"));
 
-// ▶ INC-001a: ProcessStartInfo plumbing only Nedry understood (fix: Process.RunAndCaptureTextAsync)
+// ▶ INC-010a: ProcessStartInfo plumbing only Nedry understood (fix: Process.RunAndCaptureTextAsync)
 var log = await RunAndCaptureAsync("git", "log", "-5", "--format=%h  %an  %s");
 AnsiConsole.WriteLine(log);
 
@@ -40,7 +40,7 @@ static async Task<string> RunAndCaptureAsync(string fileName, params string[] ar
     return process.ExitCode == 0 ? output.ToString() : error.ToString();
 }
 
-// ▶ INC-001b: move this class to diag-helpers.cs
+// ▶ INC-010b: move this class to diag-helpers.cs
 static class Diagnostics
 {
     public static void PrintRuntimeInfo()

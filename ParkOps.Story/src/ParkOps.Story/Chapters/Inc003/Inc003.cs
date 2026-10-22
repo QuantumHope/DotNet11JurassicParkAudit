@@ -1,88 +1,77 @@
+using ParkOps.Core.Sensors;
 using ParkOps.Story.Beats;
 using ParkOps.Story.Code;
 using ParkOps.Story.Story;
 using SadRogue.Primitives;
-using Start = ParkOps.Core.Sensors;
 
 namespace ParkOps.Story.Chapters.Inc003;
 
-/// <summary>
-/// Lesson 3, union types. Incident INC-003, "Probably a guest": the motion sensor in the raptor paddock reports a
-/// Velociraptor, and a discard arm in ThreatAssessor turns it into a friendly guest.
-/// </summary>
+/// <summary>Lesson 3, LINQ FullJoin. Incident INC-003, "The headcount": an inner join that can only ever count the animals it expected to find.</summary>
 public static class Inc003
 {
-    private const string Sensors = "src/ParkOps.Core/Sensors/";
+    private const string Path = "src/ParkOps.ControlRoom/Panels/CensusPanel.cs";
 
     public static Chapter Build(Pages pages)
     {
         var finding = Findings.Get("INC-003");
+        var before = SourceFile.Load("before/CensusPanel.cs", Path);
+        var after = SourceFile.Load("after/CensusPanel.cs", Path);
+
+        var roster = Census.Roster();
+        var tracked = SensorNetwork.Sweep();
+        var located = Census.Located(roster, tracked);
+        var missing = Census.Unrostered(roster, tracked).Count;
+
         var title = finding.LessonLabel;
-        SourceFile Before(string file) => SourceFile.Load($"before/{file}", Sensors + file);
-        SourceFile After(string file) => SourceFile.Load($"after/Inc003/{file}", Sensors + file);
-
-        var paddock9 = Start.SensorFeed.Current()[0];
-        var assessed = Start.ThreatAssessor.Assess(paddock9.Contact);
-        var raptor = (ParkOps.Core.Animals.Dinosaur)paddock9.Contact.Value;
-
         return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
-            new FindingBeat(finding, "Motion sensors  (F3 SECURITY)", Sensors + "ThreatAssessor.cs",
+            new FindingBeat(finding, "Animal census  (F2 ANIMALS)", Path,
             [
                 new("Observation",
-                    $"The {paddock9.Location} motion sensor has been reporting a contact all morning. The control room shows it as " +
-                    $"\"{assessed.Label}\", threat {assessed.Level.ToString().ToUpperInvariant()}. Nobody went to look.",
-                    assessed.Level.ToString().ToUpperInvariant(), $"threat level ParkOps gave the {paddock9.Location} contact"),
+                    $"The control room's census has reported every rostered animal located, {roster.Count} of {roster.Count}, " +
+                    "every day since go-live. The census status light has never been anything but green.",
+                    $"{located} / {roster.Count}", "animals located, according to ParkOps"),
                 new("Why it matters",
-                    $"{paddock9.Location} is the raptor paddock. The sensor did its job: it reported exactly what it saw. " +
-                    "The software between the sensor and the screen decided it was probably a guest.",
-                    $"{raptor.Tag}", $"the {raptor.GetType().Name} the sensor actually reported"),
+                    "The census is how the park knows whether animals are getting out, or getting in. " +
+                    "A count that can't come out wrong isn't a count. It just repeats the roster back to you.",
+                    $"{tracked.Count}", "distinct signals on the motion grid, from the same sweep"),
             ], pages.Next()),
 
-            new MotionExhibit(finding, CodePath.Before, pages.Next()),
+            new CensusExhibit(finding, CodePath.Before, pages.Next()),
 
-            new CodeBeat(title, Before("ThreatAssessor.cs"),
+            new CodeBeat(title, before,
             [
-                new("_                =>", "The discard arm",
-                    "MotionContact is an open base type, so the compiler can't know which wrappers exist and the switch needs a " +
-                    "catch-all. DinosaurContact was added later and nobody added an arm: it lands in _, labelled a friendly guest.",
-                    new Rectangle(28, 25, 90, 7)),
+                new("expected.Join(", "Root cause",
+                    "Join is an inner join. A sensor signal with no roster entry has nothing to match, so it's dropped " +
+                    "before anything counts it. The query can only ever find animals it already expected.",
+                    new Rectangle(52, 21, 62, 7)),
             ], pages.Next()),
 
-            new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
+            // The idea, drawn, before the code changes: what each kind of join keeps.
+            new JoinConceptBeat(finding, roster.Count, tracked.Count, located, pages.Next()),
+
+            new FixBeat(title, before, after, $"{finding.Platform}  ·  {finding.Feature}",
             [
-                new FileFix(Before("MotionContact.cs"), After("MotionContact.cs"), new("public union MotionContact", "A union type",
-                    "One line replaces the base record and four wrappers. A MotionContact is exactly one of these four types: " +
-                    "the vendors' own records, unchanged.",
-                    new Rectangle(28, 13, 90, 6))),
-                new FileFix(Before("ThreatAssessor.cs"), After("ThreatAssessor.cs"), new("Dinosaur d    =>", "Exhaustive, no discard",
-                    "The switch matches the case types directly and covers all four, so it needs no _ arm. Carnivores are " +
-                    "CRITICAL; everything else is named, not guessed.",
-                    new Rectangle(28, 25, 90, 6))),
-                new FileFix(Before("SensorFeed.cs"), After("SensorFeed.cs"), new("new Velociraptor(\"V-07\")", "Implicit conversion",
-                    "Each case type converts to the union implicitly, so the feed lists plain values with no wrappers.",
-                    new Rectangle(28, 28, 90, 5))),
+                new("expected.FullJoin(", "New in .NET 11",
+                    "FullJoin keeps rows from both sides. Where there's no match, that side comes through as null, " +
+                    "so a missing animal and an unknown signal both turn into rows you can report on.",
+                    new Rectangle(56, 26, 60, 7)),
             ], pages.Next()),
 
-            new ConsoleBeat(title, "Build", "A new kind of contact",
-                ConsoleCapture.Load("capture/Inc003/unidentified-build.txt"),
-                new("warning CS8509", "The compiler finds it",
-                    "Add Unidentified to the union and the build points at every switch that doesn't handle it, by name. " +
-                    "In the old code it would have been one more friendly guest.",
-                    new Rectangle(28, 27, 90, 6)),
-                pages.Next()),
+            // The call just written, taken apart: what each argument is.
+            new FullJoinAnatomyBeat(finding, pages.Next()),
 
-            new MotionExhibit(finding, CodePath.After, pages.Next()),
+            new CensusExhibit(finding, CodePath.After, pages.Next()),
 
             new ResolutionBeat(finding, () =>
                 {
-                    var fixedAssessment = Fixed.Inc003.ThreatAssessor.Assess(Fixed.Inc003.SensorFeed.Current()[0].Contact);
-                    return new(assessed.Level.ToString().ToUpperInvariant(), $"\"{assessed.Label}\" for {raptor.GetType().Name} {raptor.Tag} in {paddock9.Location}.",
-                        fixedAssessment.Level.ToString().ToUpperInvariant(), $"\"{fixedAssessment.Label}\". New contact types are compile warnings, not guests.");
+                    var fixedCensus = Census.Render(CodePath.After, roster, tracked);
+                    var beforeCensus = Census.Render(CodePath.Before, roster, tracked);
+                    return new($"{located} / {roster.Count}", $"\"{beforeCensus.Lines[^1].Text}\". The light stays green whatever the motion grid sees.",
+                        $"{missing} found", $"\"{fixedCensus.Lines[0].Text}\". The census goes red and lists each tag.");
                 },
-                "MotionContact became a one-line union of the four contact types; the switch lost its discard arm; the feed lost its wrappers.",
-                "When a value is one of a known set of types, say so with a union and let the compiler check every switch. " +
-                "Treat a discard arm over domain types as a smell.",
+                "One file, one operator: expected.Join(...) became expected.FullJoin(...), with each side's missing value labelled.",
+                "Reconcile against both sources. Any time a report compares two lists, ask what happens to rows that only appear on one side.",
                 pages.Next()),
         ]);
     }

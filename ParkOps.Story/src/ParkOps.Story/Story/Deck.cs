@@ -13,7 +13,8 @@ using ParkOps.Story.Chapters.Inc010;
 namespace ParkOps.Story.Story;
 
 /// <summary>
-/// The talk as one slideshow: a title slide, then each lesson (its section slide first), then the closing slide.
+/// The talk as one slideshow: a title slide, then each lesson (its section slide first), a short encore, then the
+/// closing slide.
 /// NEXT and BACK just walk it in order. The index (every lesson at a glance) comes last, after the closing slide,
 /// and HOME jumps to it from anywhere.
 /// </summary>
@@ -42,6 +43,7 @@ public static class Deck
         [
             new("Title", "Unforeseen Consequences", null, [new TitleBeat()]),
             .. lessons.Select(lesson => lesson with { Beats = [new LessonIntroBeat(Findings.Get(lesson.Id)), .. lesson.Beats] }),
+            new("Encore", "Life finds a way", null, [new MalcolmBeat()]),
             new("Closing", "Report to the board", null, [new ClosingBeat()]),
             new("Index", "Index of lessons", null, [index]),
         ];

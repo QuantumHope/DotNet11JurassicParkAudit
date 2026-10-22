@@ -3,7 +3,7 @@ using ParkOps.Core.Animals;
 namespace ParkOps.Genetics.Plugin;
 
 // dnedry: Henry's lab ships species straight from here. No review needed.
-// ▶ INC-004c: species declared outside Core, never reviewed (fix: move into Core)
+// ▶ INC-006c: species declared outside Core, never reviewed (fix: move into Core)
 public record Procompsognathus(string Tag) : Dinosaur(Tag) { public override bool IsCarnivore => false; } // "basically scavengers" - H.W.
 
 public static class WuLab

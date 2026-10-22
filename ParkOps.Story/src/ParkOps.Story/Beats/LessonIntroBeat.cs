@@ -22,7 +22,7 @@ public sealed class LessonIntroBeat(Finding finding) : Beat
         canvas.Clear(Brand.Black);
         var elapsed = frame.Elapsed;
 
-        Slides.Kicker(canvas, 10, 4, $"Lesson {finding.Lesson:00} of {Findings.All.Length:00}", Brand.Green);
+        Slides.Kicker(canvas, 10, 4, $"Lesson {finding.Lesson:00} of {Findings.All.Length:00}  ·  {Findings.Act(finding.Lesson)}", Brand.Green);
         canvas.Big(10, 8, finding.Feature, Slides.FadeIn(Brand.TrueWhite, elapsed, 0));
 
         var report = new ReportPage(canvas);

@@ -6,7 +6,7 @@ public sealed record Assessment(Threat Level, string Label);
 
 public static class ThreatAssessor
 {
-    // ▶ INC-003b: discard arm swallows every contact type nobody listed (fix: exhaustive union switch)
+    // ▶ INC-004b: discard arm swallows every contact type nobody listed (fix: exhaustive union switch)
     public static Assessment Assess(MotionContact contact) => contact switch
     {
         VehicleContact v => new(Threat.None, $"Tour vehicle {v.Vehicle.CallSign}"),

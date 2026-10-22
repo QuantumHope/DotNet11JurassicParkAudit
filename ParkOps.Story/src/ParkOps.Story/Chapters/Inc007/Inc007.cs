@@ -1,5 +1,5 @@
-using ParkOps.Data;
 using ParkOps.Story.Beats;
+using ParkOps.Story.Chapters.Inc010;
 using ParkOps.Story.Code;
 using ParkOps.Story.Story;
 using SadRogue.Primitives;
@@ -7,81 +7,91 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Chapters.Inc007;
 
 /// <summary>
-/// Lesson 7, EF Core 11 MaxByAsync + migrate --add. Incident INC-007, "Which fence fails most?": naming one fence loads
-/// every breach row; and the board's Voltage column is waiting on a migration.
+/// Lesson 7, runtime async. Incident INC-007, "Who turned off the fences?": the fence audit walks the live stack for its
+/// caller and finds only async state-machine plumbing. Both versions run the original MaintenanceWindow.cs unchanged;
+/// the only difference is the compiler switch. Whatever the audit actually captures is what this lesson reports (and it
+/// marks itself PARTIAL if the fixed build still can't name the caller).
 /// </summary>
 public static class Inc007
 {
-    private const string PanelPath = "src/ParkOps.ControlRoom/Panels/MaintenancePanel.cs";
-    private const string FencePath = "src/ParkOps.Data/Fence.cs";
+    private const string SourcePath = "src/ParkOps.ControlRoom/Fences/MaintenanceWindow.cs";
+    private const string ProjectPath = "src/ParkOps.ControlRoom/ParkOps.ControlRoom.csproj";
 
     public static Chapter Build(Pages pages)
     {
         var finding = Findings.Get("INC-007");
         var title = finding.LessonLabel;
-        var before = SourceFile.Load("before/MaintenancePanel.cs", PanelPath);
-        var after = SourceFile.Load("after/Inc007/MaintenancePanel.cs", PanelPath);
 
-        int fences, breaches;
-        using (var db = ParkDb.Create())
-        {
-            fences = db.Fences.Count();
-            breaches = db.Breaches.Count();
-        }
-        var rows = fences + breaches;
+        var before = FenceRuns.Run(CodePath.Before);
+        var after = FenceRuns.Run(CodePath.After);
+        var plumbing = before.Stack.Count(f => !FenceRuns.Chain.Contains(f));
 
         return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
-            new FindingBeat(finding, "Fence maintenance  (F4 OPERATIONS)", PanelPath,
+            new FencesBeat(finding, offline: false, "Isla Nublar's perimeter fences",
+                ("The off switch",
+                    "The fence controller can cut power to every paddock. When it does, it writes an audit line saying who " +
+                    "asked. After an incident, that line is all anyone has to go on.", AtScript: false),
+                pages.Next()),
+
+            new FindingBeat(finding, "Fence status  (F3 SECURITY)", SourcePath,
             [
                 new("Observation",
-                    "FIND REPAIR answers one question: which fence has failed most often? It gets the right answer, after a pause, " +
-                    "and the operations workstation's memory climbs every time someone asks.",
-                    $"{rows:N0}", "rows loaded into memory to name one fence"),
+                    "The perimeter fences went down during the scheduled maintenance that runs at startup. The fence panel's audit " +
+                    $"line reads \"Disabled by: {before.DisabledBy ?? "unknown"}\", over a stack that names no ParkOps code.",
+                    before.DisabledBy ?? "unknown", "who the audit says cut the fence power"),
                 new("Why it matters",
-                    $"There are {fences} fences and {breaches:N0} breach records, and breaches only accumulate. The board also " +
-                    "wants fence voltage recorded, and nobody has written the migration.",
-                    "1", "fence the question is actually about"),
+                    "The audit exists to answer exactly one question after an incident. It can't, because the stack it captures is " +
+                    "the compiler's async plumbing, not the methods that were running.",
+                    $"{plumbing} / {before.Stack.Count}", "captured frames that aren't a method in the call chain"),
             ], pages.Next()),
 
-            new MaintenanceExhibit(finding, CodePath.Before, pages.Next()),
-
-            new CodeBeat(title, before,
-            [
-                new("var fences = await db.Fences.Include(f => f.Breaches).ToListAsync();", "The database is a list",
-                    "Include pulls every breach for every fence and ToListAsync materializes the lot, change-tracked, before " +
-                    "MaxBy runs in memory. The database could have answered with one row.",
-                    new Rectangle(28, 25, 90, 7)),
-            ], pages.Next()),
+            new FenceExhibit(finding, CodePath.Before, pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
-                new FileFix(before, after, new("MaxByAsync", "New in EF Core 11",
-                    "MaxByAsync is translated to SQL: ORDER BY the breach count, take one. Only the winning fence comes back.",
-                    new Rectangle(28, 25, 90, 6))),
-                new FileFix(SourceFile.Load("before/Fence.cs", FencePath), SourceFile.Load("after/Inc007/Fence.cs", FencePath),
-                    new("public int Voltage { get; set; }", "The board's column",
-                        "One property. It still needs a migration before the database has the column.",
-                        new Rectangle(66, 10, 52, 6), NoteLeader.Line)),
+                new FileFix(SourceFile.Load("before/ParkOps.ControlRoom.csproj", ProjectPath), SourceFile.Load("after/Inc007/ParkOps.ControlRoom.csproj", ProjectPath),
+                    new("runtime-async=on", "No C# changes",
+                        "One property: the compiler emits async methods as runtime-async methods instead of state machines, and the " +
+                        "runtime runs them. Stack frames become the methods themselves.",
+                        new Rectangle(28, 21, 90, 6))),
             ], pages.Next()),
 
-            new ConsoleBeat(title, "Migrate", "One-step migration (RC2 caveat)",
-                ConsoleCapture.Load("capture/Inc007/migrate-add.txt"),
-                new("already exists", "Not ready on RC2",
-                    "database update --add scaffolds and applies in one step, but on RC2 the migration it scaffolds recreates every " +
-                    "table, so applying it fails. The two-step dotnet ef migrations add AddFenceVoltage produces the correct " +
-                    "AddColumn. Use that until it's fixed.",
-                    new Rectangle(28, 25, 90, 8)),
-                pages.Next()),
+            new FenceExhibit(finding, CodePath.After, pages.Next()),
 
-            new MaintenanceExhibit(finding, CodePath.After, pages.Next()),
+            new TradeoffsBeat(finding, "Before you flip the switch",
+            [
+                "Live stacks name the methods you wrote: the debugger, profilers, new StackTrace(), audit logs.",
+                "Less overhead per await, and fewer allocations, in most async-heavy code.",
+                "No code changes. One project property, and the .NET 11 libraries are already built this way.",
+            ],
+            [
+                "It's a preview feature in .NET 11: opt-in, not yet the default for your code.",
+                "net11.0 only. A library that also targets older frameworks still ships state machines there.",
+                "Anything that reads stack shapes will see different frames: log parsers, tests that assert on frames, " +
+                "tools that look for <Method>d__N.MoveNext.",
+                "Measure first. Gains depend on the workload, and early benchmarks found some mixed paths slower.",
+                "Exception stack traces already looked clean. This changes what you see while code runs, not crash logs.",
+            ],
+            "Source: Microsoft Learn, What's new in the .NET 11 runtime (RC2).",
+            pages.Next()),
 
-            new ResolutionBeat(finding, () => new(
-                    $"{rows:N0} rows", "fences and breaches, change-tracked in memory, to name one fence.",
-                    "1 row", "the winning fence, computed by the database with MaxByAsync."),
-                "MaintenancePanel asks the database with MaxByAsync. Fence gained Voltage; on RC2, add its migration with the " +
-                "two-step migrations add, not database update --add.",
-                "Let the database answer aggregate questions. Watch for Include + ToList feeding an in-memory Max, Count or First.",
+            new ResolutionBeat(finding, () =>
+                {
+                    var b = FenceRuns.Run(CodePath.Before);
+                    var a = FenceRuns.Run(CodePath.After);
+                    var partial = a.DisabledBy is null;
+                    return new(b.DisabledBy ?? "unknown", $"top frame {b.Stack.FirstOrDefault()}: compiler plumbing, no caller.",
+                        a.DisabledBy ?? "unknown", partial
+                            ? $"top frame {a.Stack.FirstOrDefault()}: a real method name, but the caller still isn't on the stack."
+                            : $"the audit names the caller: {a.DisabledBy}.",
+                        partial);
+                },
+                "ParkOps.ControlRoom.csproj gains <Features>$(Features);runtime-async=on</Features>. MaintenanceWindow.cs is unchanged.",
+                after.DisabledBy is null
+                    ? "Turn on runtime async for readable stacks. To identify a caller, capture the stack before the first await, " +
+                      "or pass the caller in: a live stack only holds the synchronous part of an async call."
+                    : "Turn on runtime async for readable stacks, and keep audits that walk the stack before the first await.",
                 pages.Next()),
         ]);
     }

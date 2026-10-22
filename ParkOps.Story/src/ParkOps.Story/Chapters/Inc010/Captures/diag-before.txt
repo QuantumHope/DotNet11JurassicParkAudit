@@ -1,0 +1,23 @@
+# the original scripts/diag.cs, run in this repo; .NET 11 RC2 SDK, 2026-10-18
+$ dotnet run scripts/diag.cs
+──────────────────────── PARK OPS // SYSTEM DIAGNOSTIC ─────────────────────────
+bd9ee75  Matthew-Hope Eland  Make ParkOps.Story report-first: executive summary
+hub and named lessons
+2660f67  Matthew-Hope Eland  Add ParkOps.Story: the talk as a Leading EDJE
+assessment, INC-003 end to end
+fd4138d  Matthew-Hope Eland  Start the demo on .NET 11 RC2 and rename the
+baseline to ParkOps.Start
+a68cc84  Matthew-Hope Eland  Add an F5 TASKS tab that runs the demo as
+acceptance tests
+ceb77b6  Matthew-Hope Eland  Rebuild the control room as an animated SadConsole
+workstation
+
+┌──────────────────┬──────────────────────────────┐
+│ Check            │ Value                        │
+├──────────────────┼──────────────────────────────┤
+│ Runtime          │ .NET 11.0.0-rc.2.26504.105   │
+│ OS               │ Microsoft Windows 10.0.26200 │
+│ Architecture     │ X64                          │
+│ Server GC        │ False                        │
+│ Fence controller │ UNREACHABLE                  │
+└──────────────────┴──────────────────────────────┘

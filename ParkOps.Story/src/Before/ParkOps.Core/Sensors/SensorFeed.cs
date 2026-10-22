@@ -9,8 +9,8 @@ public static class SensorFeed
 {
     public static IReadOnlyList<SensorPing> Current() =>
     [
-        // ▶ INC-003c: every case has to be wrapped (fix: implicit conversion to the union)
-        new("Paddock 9",      new DinosaurContact(new Velociraptor("V-07"))),
+        // ▶ INC-004c: every case has to be wrapped (fix: implicit conversion to the union)
+        new("Kitchen",        new DinosaurContact(new Velociraptor("V-07"))),
         new("Visitor Center", new GuestContact(new Guest("Donald Gennaro"))),
         new("Main Road",      new VehicleContact(new TourVehicle("Explorer 04"))),
         new("East Dock",      new StaffContact(new Employee("Robert Muldoon", "Game Warden"))),

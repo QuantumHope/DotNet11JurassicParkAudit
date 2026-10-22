@@ -8,19 +8,19 @@ public static class GuestLocatorPanel
 {
     public static Readout Render(ParkMap map)
     {
-        // ▶ INC-006a: case-sensitive, but the firmware reports "paddock-9" (fix: collection expression with a comparer)
+        // ▶ INC-009a: case-sensitive, but the firmware reports "paddock-9" (fix: collection expression with a comparer)
         var restricted = new HashSet<string> { "PADDOCK-9", "RAPTOR-PEN", "VISITOR-CENTER-KITCHEN" };
 
         Cell? found = null;
         var scanned = 0;
         var foundThem = false;
-        // ▶ INC-006c: flag variable checked in two places; the outer loop never stops (fix: labeled break)
+        // ▶ INC-009c: flag variable checked in two places; the outer loop never stops (fix: labeled break)
         for (var y = 0; y < map.Height; y++)
         {
             for (var x = 0; x < map.Width; x++)
             {
                 scanned++;
-                // ▶ INC-006b: hand-rolled index math into the vendor's type (fix: extension indexer)
+                // ▶ INC-009b: hand-rolled index math into the vendor's type (fix: extension indexer)
                 var cell = map.Cells[y * map.Width + x];
                 if (cell.Occupants.Any(o => o is Guest)) { found = cell; foundThem = true; break; }
             }

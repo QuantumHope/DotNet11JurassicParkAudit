@@ -6,88 +6,84 @@ using SadRogue.Primitives;
 namespace ParkOps.Story.Chapters.Inc001;
 
 /// <summary>
-/// Lesson 1, file-based apps: #:include + Process.RunAndCaptureTextAsync. Incident INC-001, "Who touched the system?":
-/// the diagnostics script is one file of process plumbing only dnedry understood. Before and after are captures of
-/// both scripts really running, from the original code in this repo; the output is the same, the script isn't.
+/// Lesson 1, ASP.NET Core 11 async validation + OpenAPI 3.2. Incident INC-001, "Tours to closed paddocks": the booking
+/// API accepts a tour into the closed raptor paddock, and the contractor's override endpoint isn't marked deprecated.
+/// Before and after are captures of the real API answering the requests in ParkOps.Api.http.
 /// </summary>
 public static class Inc001
 {
-    private const string ScriptPath = "scripts/diag.cs";
-    private const string HelpersPath = "scripts/diag-helpers.cs";
+    private const string ProgramPath = "src/ParkOps.Api/Program.cs";
+    private const string AttributePath = "src/ParkOps.Api/PaddockOpenAttribute.cs";
 
     public static Chapter Build(Pages pages)
     {
         var finding = Findings.Get("INC-001");
         var title = finding.LessonLabel;
-        var before = SourceFile.Load("before/diag.cs", ScriptPath);
-        var after = SourceFile.Load("after/Inc001/diag.cs", ScriptPath);
-        var helpers = SourceFile.Load("after/Inc001/diag-helpers.cs", HelpersPath);
-        var plumbing = before.Excerpt("static async Task<string> RunAndCaptureAsync", "return process.ExitCode");
-        var total = before.Lines.Count + before.FirstLineNumber - 1;
+        var before = SourceFile.Load("before/Api/Program.cs", ProgramPath).From("app.MapPost(\"/tours\"");
+        var after = SourceFile.Load("after/Inc001/Program.cs", ProgramPath).From("app.MapPost(\"/tours\"");
+        var attribute = SourceFile.Load("after/Inc001/PaddockOpenAttribute.cs", AttributePath);
 
         return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
-            // Orientation first: the fences, and where the script fits. Then the script itself, early.
-            new FencesBeat(finding, pages.Next()),
-
-            new WalkthroughBeat(title, "Reading the script", before,
+            new FindingBeat(finding, "Tour booking API  (ParkOps.Api)", ProgramPath,
             [
-                new("One file, top to bottom",
-                    $"This is the whole diagnostic as it ships: {total} lines, a file-based app run with dotnet run scripts/diag.cs. " +
-                    "No project file, which is good. Everything else has to live in this one file, and only dnedry has ever changed it.",
-                    "#!/usr/bin/env dotnet", "#:package"),
-                new("Its job is three lines",
-                    "Print a header, show the last five commits, print the runtime table. That's the whole diagnostic.",
-                    "AnsiConsole.Write(new Rule", "Diagnostics.PrintRuntimeInfo();"),
-                new("A process runner for git log",
-                    $"To run one command it carries its own {plumbing.Lines.Count + 1}-line helper. It starts with ProcessStartInfo: " +
-                    "redirect stdout and stderr, no shell, no window, then each argument.",
-                    "static async Task<string> RunAndCaptureAsync", "foreach (var argument"),
-                new("Two streams, wired by hand",
-                    "Two StringBuilders, two event handlers with null checks, then Start, BeginOutputReadLine, BeginErrorReadLine " +
-                    "and WaitForExitAsync. Every one of those calls has to be there, in that order.",
-                    "var output = new StringBuilder();", "await process.WaitForExitAsync();"),
-                new("A failure looks like a result",
-                    "When git fails, it hands back stderr as if it were the log. The caller can't tell the difference.",
-                    "return process.ExitCode"),
-                new("And the helpers can't move out",
-                    "PrintRuntimeInfo sits at the bottom because a file-based app was one file. Every new helper makes this file " +
-                    "longer, which is why only dnedry would touch it.",
-                    "// ▶ INC-001b: move this class", "AnsiConsole.Write(table);"),
+                new("Observation",
+                    "The booking API accepted a tour for Lex Murphy into PADDOCK-9, the raptor paddock, which has been closed to " +
+                    "tours all season. And the contractor's /system/override endpoint is still live, published as a normal operation.",
+                    "201", "the API's answer to a tour of a closed paddock"),
+                new("Why it matters",
+                    "The paddock's status is in the database, but the request's validation attributes run synchronously, so they " +
+                    "can't ask it. Clients reading the OpenAPI document have no way to know the override is on its way out.",
+                    "0", "validation rules that check whether a paddock is open"),
             ], pages.Next()),
 
-            new ConsoleBeat(title, "Before", "Running it, as shipped",
-                ConsoleCapture.Load("capture/Inc001/diag-before.txt"), null, pages.Next()),
+            new ConsoleBeat(title, "Before", "Booking a closed paddock",
+                ConsoleCapture.Load("capture/Inc001/api-before.txt"),
+                new("201 Created|/system/override:", "Accepted",
+                    "Both tours are accepted, the closed paddock included. The OpenAPI document is already 3.2.0, but nothing " +
+                    "marks /system/override as deprecated.",
+                    new Rectangle(28, 28, 90, 5)),
+                pages.Next()),
+
+            new CodeBeat(title, before,
+            [
+                new("public record TourBooking", "Validation can't reach the database",
+                    "[Required] only checks the request itself. Whether PADDOCK-9 is open lives in ParkDb, and a synchronous " +
+                    "validation attribute has no good way to ask it. So nothing asks.",
+                    new Rectangle(28, 21, 90, 6)),
+                new("app.MapPost(\"/system/override\"", "Live, and undocumented as such",
+                    "The emergency endpoint is mapped like any other. Nothing in the code or the published contract says clients " +
+                    "should stop using it.",
+                    new Rectangle(28, 21, 90, 6)),
+            ], pages.Next()),
 
             new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
-                new FileFix(before.Excerpt("#!/usr/bin/env dotnet", "Diagnostics.PrintRuntimeInfo();"), after,
-                    new("Process.RunAndCaptureTextAsync", "New in .NET 11",
-                        "One call starts the process, captures both streams and waits. The result has StandardOutput, StandardError " +
-                        "and ExitCode. #:include brings in a second file.",
-                        new Rectangle(28, 23, 90, 6)), Tab: "diag.cs"),
-                new FileFix(before.From("static async Task<string> RunAndCaptureAsync"), SourceFile.Empty(ScriptPath), Tab: "diag.cs (helpers)"),
-                new FileFix(SourceFile.Empty(HelpersPath), helpers,
-                    new("static class Diagnostics", "#:include",
-                        "A file-based app can now span files: #:include diag-helpers.cs compiles this one in. The class is unchanged; it " +
-                        "just has its own file.",
-                        new Rectangle(28, 27, 90, 6))),
+                new FileFix(before, after, new("[Obsolete(", "[Obsolete] flows into OpenAPI",
+                    "Map the endpoint to a named method marked [Obsolete] and the OpenAPI 3.2 document marks the operation " +
+                    "\"deprecated\": true. TourBooking's Paddock gains [PaddockOpen].",
+                    new Rectangle(28, 21, 90, 6))),
+                new FileFix(SourceFile.Empty(AttributePath), attribute, new("IsValidAsync", "New in .NET 11",
+                    "AsyncValidationAttribute lets a validation attribute await: it gets services from the ValidationContext and " +
+                    "asks the database. On RC2 it must also override the synchronous IsValid.",
+                    new Rectangle(28, 27, 90, 6))),
             ], pages.Next()),
 
-            new ConsoleBeat(title, "After", "Same diagnostic, a fraction of the code",
-                ConsoleCapture.Load("capture/Inc001/diag-after.txt"),
-                new("Fence controller", "Identical output",
-                    $"Same commits, same runtime table. The script went from {total} lines in one file to {after.Lines.Count} plus a " +
-                    $"{helpers.Lines.Count}-line helpers file, and the part only dnedry understood is gone.",
-                    new Rectangle(28, 27, 90, 6)),
+            new ConsoleBeat(title, "After", "The same requests, validated",
+                ConsoleCapture.Load("capture/Inc001/api-after.txt"),
+                new("is closed. Tour denied.|\"deprecated\": true", "Denied, with a reason",
+                    "PADDOCK-9 now gets 400 with the attribute's message; PADDOCK-1 is still booked. And the published contract " +
+                    "marks /system/override \"deprecated\": true.",
+                    new Rectangle(28, 28, 90, 5)),
                 pages.Next()),
 
             new ResolutionBeat(finding, () => new(
-                    $"{total} lines", $"one file, {plumbing.Lines.Count + 1} of them a hand-rolled process runner.",
-                    $"{after.Lines.Count} + {helpers.Lines.Count}", "diag.cs plus diag-helpers.cs; the runner is one framework call."),
-                "diag.cs calls Process.RunAndCaptureTextAsync and pulls its helpers in with #:include diag-helpers.cs.",
-                "Keep scripts as file-based apps, and split them with #:include once they grow. Use RunAndCaptureTextAsync " +
-                "instead of hand-wiring ProcessStartInfo.",
+                    "201", "for a tour of the closed raptor paddock; the override endpoint looks like any other.",
+                    "400", "\"Paddock 'PADDOCK-9' is closed. Tour denied.\" The override is \"deprecated\": true in OpenAPI."),
+                "PaddockOpenAttribute (AsyncValidationAttribute) checks ParkDb; TourBooking.Paddock uses it. /system/override maps to " +
+                "an [Obsolete] method.",
+                "Put rules that need data into async validators rather than endpoint code. Deprecate with [Obsolete] so the " +
+                "published contract says so.",
                 pages.Next()),
         ]);
     }

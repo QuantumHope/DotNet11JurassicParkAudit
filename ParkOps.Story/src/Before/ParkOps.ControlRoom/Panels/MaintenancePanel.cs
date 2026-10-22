@@ -10,7 +10,7 @@ public static class MaintenancePanel
     {
         await using var db = ParkDb.Create();
 
-        // ▶ INC-007a: loads every fence and every breach into memory to find one row (fix: MaxByAsync)
+        // ▶ INC-008: loads every fence and every breach into memory to find one row (fix: MaxByAsync)
         var fences = await db.Fences.Include(f => f.Breaches).ToListAsync();
         var worst = fences.MaxBy(f => f.Breaches.Count);
 

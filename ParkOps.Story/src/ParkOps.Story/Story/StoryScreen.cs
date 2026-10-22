@@ -77,7 +77,7 @@ public sealed class StoryScreen : ScreenSurface, IStory
     /// <summary>--fullscreen: switch to fullscreen on the first frame, once the window exists (same as F11).</summary>
     public bool StartFullScreen { get; set; }
 
-    /// <summary>A file-name-friendly name for where we are, e.g. "05-INC-002-Fix-2".</summary>
+    /// <summary>A file-name-friendly name for where we are, e.g. "05-INC-003-Fix-2".</summary>
     public string Place => $"{current + 1:00}-{Chapter.Id}-{Beat.Label}-{step + 1}";
 
     private void Go(int index, bool forward)

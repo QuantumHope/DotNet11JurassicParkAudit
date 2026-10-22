@@ -29,15 +29,15 @@
   <ItemGroup>
     <Compile Include="$(Before)\ParkOps.ControlRoom\Panels\CensusPanel.cs" Link="Linked\Before\CensusPanel.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\Panels\CensusPanel.cs" LogicalName="before/CensusPanel.cs" />
-    <EmbeddedResource Include="Chapters\Inc002\CensusPanel.cs" LogicalName="after/CensusPanel.cs" />
+    <EmbeddedResource Include="Chapters\Inc003\CensusPanel.cs" LogicalName="after/CensusPanel.cs" />
   </ItemGroup>
 
   <!-- Lesson 6: labeled break, extension indexers, with(...) -->
   <ItemGroup>
     <Compile Include="$(Before)\ParkOps.ControlRoom\Panels\GuestLocatorPanel.cs" Link="Linked\Before\GuestLocatorPanel.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\Panels\GuestLocatorPanel.cs" LogicalName="before/GuestLocatorPanel.cs" />
-    <EmbeddedResource Include="Chapters\Inc006\GuestLocatorPanel.cs" LogicalName="after/Inc006/GuestLocatorPanel.cs" />
-    <EmbeddedResource Include="Chapters\Inc006\ParkMapExtensions.cs" LogicalName="after/Inc006/ParkMapExtensions.cs" />
+    <EmbeddedResource Include="Chapters\Inc009\GuestLocatorPanel.cs" LogicalName="after/Inc009/GuestLocatorPanel.cs" />
+    <EmbeddedResource Include="Chapters\Inc009\ParkMapExtensions.cs" LogicalName="after/Inc009/ParkMapExtensions.cs" />
   </ItemGroup>
   <!-- Lesson 3: union types. ThreatAssessor and friends are in ParkOps.Core (already referenced); MotionPanel is linked. -->
   <ItemGroup>
@@ -45,10 +45,10 @@
     <EmbeddedResource Include="$(Before)\ParkOps.Core\Sensors\MotionContact.cs" LogicalName="before/MotionContact.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.Core\Sensors\ThreatAssessor.cs" LogicalName="before/ThreatAssessor.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.Core\Sensors\SensorFeed.cs" LogicalName="before/SensorFeed.cs" />
-    <EmbeddedResource Include="Chapters\Inc003\MotionContact.cs" LogicalName="after/Inc003/MotionContact.cs" />
-    <EmbeddedResource Include="Chapters\Inc003\ThreatAssessor.cs" LogicalName="after/Inc003/ThreatAssessor.cs" />
-    <EmbeddedResource Include="Chapters\Inc003\SensorFeed.cs" LogicalName="after/Inc003/SensorFeed.cs" />
-    <EmbeddedResource Include="Chapters\Inc003\Captures\unidentified-build.txt" LogicalName="capture/Inc003/unidentified-build.txt" />
+    <EmbeddedResource Include="Chapters\Inc004\MotionContact.cs" LogicalName="after/Inc004/MotionContact.cs" />
+    <EmbeddedResource Include="Chapters\Inc004\ThreatAssessor.cs" LogicalName="after/Inc004/ThreatAssessor.cs" />
+    <EmbeddedResource Include="Chapters\Inc004\SensorFeed.cs" LogicalName="after/Inc004/SensorFeed.cs" />
+    <EmbeddedResource Include="Chapters\Inc004\Captures\unidentified-build.txt" LogicalName="capture/Inc004/unidentified-build.txt" />
   </ItemGroup>
   <!-- Lesson 9: JSON unions + SerializeAsyncEnumerable (uses lesson 3's fixed union) -->
   <ItemGroup>
@@ -57,16 +57,13 @@
     <Compile Include="$(Before)\ParkOps.ControlRoom\Feed\MotionContactJsonConverter.cs" Link="Linked\Before\MotionContactJsonConverter.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\Feed\FeedCommand.cs" LogicalName="before/FeedCommand.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\Feed\MotionContactJsonConverter.cs" LogicalName="before/MotionContactJsonConverter.cs" />
-    <EmbeddedResource Include="Chapters\Inc009\FeedCommand.cs" LogicalName="after/Inc009/FeedCommand.cs" />
+    <EmbeddedResource Include="Chapters\Inc005\FeedCommand.cs" LogicalName="after/Inc005/FeedCommand.cs" />
   </ItemGroup>
   <!-- Lesson 7: EF Core 11 MaxByAsync and one-step migrations -->
   <ItemGroup>
     <Compile Include="$(Before)\ParkOps.ControlRoom\Panels\MaintenancePanel.cs" Link="Linked\Before\MaintenancePanel.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\Panels\MaintenancePanel.cs" LogicalName="before/MaintenancePanel.cs" />
-    <EmbeddedResource Include="$(Before)\ParkOps.Data\Fence.cs" LogicalName="before/Fence.cs" />
-    <EmbeddedResource Include="Chapters\Inc007\MaintenancePanel.cs" LogicalName="after/Inc007/MaintenancePanel.cs" />
-    <EmbeddedResource Include="Chapters\Inc007\Fence.txt" LogicalName="after/Inc007/Fence.cs" />
-    <EmbeddedResource Include="Chapters\Inc007\Captures\migrate-add.txt" LogicalName="capture/Inc007/migrate-add.txt" />
+    <EmbeddedResource Include="Chapters\Inc008\MaintenancePanel.cs" LogicalName="after/Inc008/MaintenancePanel.cs" />
   </ItemGroup>
   <!-- Lesson 4: closed hierarchies -->
   <ItemGroup>
@@ -74,11 +71,11 @@
     <EmbeddedResource Include="$(Before)\ParkOps.Core\Animals\Dinosaur.cs" LogicalName="before/Dinosaur.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.Core\Feeding\FeedingPlanner.cs" LogicalName="before/FeedingPlanner.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.Genetics.Plugin\WuLab.cs" LogicalName="before/WuLab.cs" />
-    <EmbeddedResource Include="Chapters\Inc004\DinosaurClosedOnly.txt" LogicalName="after/Inc004/DinosaurClosedOnly.cs" />
-    <EmbeddedResource Include="Chapters\Inc004\Dinosaur.cs" LogicalName="after/Inc004/Dinosaur.cs" />
-    <EmbeddedResource Include="Chapters\Inc004\WuLab.cs" LogicalName="after/Inc004/WuLab.cs" />
-    <EmbeddedResource Include="Chapters\Inc004\FeedingPlanner.cs" LogicalName="after/Inc004/FeedingPlanner.cs" />
-    <EmbeddedResource Include="Chapters\Inc004\Captures\plugin-build.txt" LogicalName="capture/Inc004/plugin-build.txt" />
+    <EmbeddedResource Include="Chapters\Inc006\DinosaurClosedOnly.txt" LogicalName="after/Inc006/DinosaurClosedOnly.cs" />
+    <EmbeddedResource Include="Chapters\Inc006\Dinosaur.cs" LogicalName="after/Inc006/Dinosaur.cs" />
+    <EmbeddedResource Include="Chapters\Inc006\WuLab.cs" LogicalName="after/Inc006/WuLab.cs" />
+    <EmbeddedResource Include="Chapters\Inc006\FeedingPlanner.cs" LogicalName="after/Inc006/FeedingPlanner.cs" />
+    <EmbeddedResource Include="Chapters\Inc006\Captures\plugin-build.txt" LogicalName="capture/Inc006/plugin-build.txt" />
   </ItemGroup>
   <!--
     Lesson 5: runtime async is a project-wide compiler switch, so before and after are two tiny assemblies built from the
@@ -89,30 +86,30 @@
     <ProjectReference Include="..\ParkOps.Story.Fences.After\ParkOps.Story.Fences.After.csproj" Aliases="fencesAfter" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\Fences\MaintenanceWindow.cs" LogicalName="before/MaintenanceWindow.cs" />
     <EmbeddedResource Include="$(Before)\ParkOps.ControlRoom\ParkOps.ControlRoom.csproj.txt" LogicalName="before/ParkOps.ControlRoom.csproj" WithCulture="false" />
-    <EmbeddedResource Include="Chapters\Inc005\ParkOps.ControlRoom.csproj.txt" LogicalName="after/Inc005/ParkOps.ControlRoom.csproj" WithCulture="false" />
+    <EmbeddedResource Include="Chapters\Inc007\ParkOps.ControlRoom.csproj.txt" LogicalName="after/Inc007/ParkOps.ControlRoom.csproj" WithCulture="false" />
   </ItemGroup>
   <!-- Lesson 1: file-based apps. The scripts are shown and captured running, not compiled into the story. -->
   <ItemGroup>
-    <Compile Remove="Chapters\Inc001\Script\**" />
+    <Compile Remove="Chapters\Inc010\Script\**" />
     <EmbeddedResource Include="$(Before)\scripts\diag.cs" LogicalName="before/diag.cs" />
-    <EmbeddedResource Include="Chapters\Inc001\Script\diag.cs" LogicalName="after/Inc001/diag.cs" />
-    <EmbeddedResource Include="Chapters\Inc001\Script\diag-helpers.cs" LogicalName="after/Inc001/diag-helpers.cs" />
-    <EmbeddedResource Include="Chapters\Inc001\Captures\diag-before.txt" LogicalName="capture/Inc001/diag-before.txt" />
-    <EmbeddedResource Include="Chapters\Inc001\Captures\diag-after.txt" LogicalName="capture/Inc001/diag-after.txt" />
+    <EmbeddedResource Include="Chapters\Inc010\Script\diag.cs" LogicalName="after/Inc010/diag.cs" />
+    <EmbeddedResource Include="Chapters\Inc010\Script\diag-helpers.cs" LogicalName="after/Inc010/diag-helpers.cs" />
+    <EmbeddedResource Include="Chapters\Inc010\Captures\diag-before.txt" LogicalName="capture/Inc010/diag-before.txt" />
+    <EmbeddedResource Include="Chapters\Inc010\Captures\diag-after.txt" LogicalName="capture/Inc010/diag-after.txt" />
   </ItemGroup>
   <!-- Lesson 8: ASP.NET Core async validation and OpenAPI. The API is shown and captured running, not compiled into the story. -->
   <ItemGroup>
-    <Compile Remove="Chapters\Inc008\Api\**" />
+    <Compile Remove="Chapters\Inc001\Api\**" />
     <EmbeddedResource Include="$(Before)\ParkOps.Api\Program.cs" LogicalName="before/Api/Program.cs" />
-    <EmbeddedResource Include="Chapters\Inc008\Api\Program.cs" LogicalName="after/Inc008/Program.cs" />
-    <EmbeddedResource Include="Chapters\Inc008\Api\PaddockOpenAttribute.cs" LogicalName="after/Inc008/PaddockOpenAttribute.cs" />
-    <EmbeddedResource Include="Chapters\Inc008\Captures\api-before.txt" LogicalName="capture/Inc008/api-before.txt" />
-    <EmbeddedResource Include="Chapters\Inc008\Captures\api-after.txt" LogicalName="capture/Inc008/api-after.txt" />
+    <EmbeddedResource Include="Chapters\Inc001\Api\Program.cs" LogicalName="after/Inc001/Program.cs" />
+    <EmbeddedResource Include="Chapters\Inc001\Api\PaddockOpenAttribute.cs" LogicalName="after/Inc001/PaddockOpenAttribute.cs" />
+    <EmbeddedResource Include="Chapters\Inc001\Captures\api-before.txt" LogicalName="capture/Inc001/api-before.txt" />
+    <EmbeddedResource Include="Chapters\Inc001\Captures\api-after.txt" LogicalName="capture/Inc001/api-after.txt" />
   </ItemGroup>
   <!-- Lesson 10: MEAI failover. The narrator is shown, not compiled in; the exhibit makes the same calls live. -->
   <ItemGroup>
-    <Compile Remove="Chapters\Inc010\Narrator\**" />
+    <Compile Remove="Chapters\Inc002\Narrator\**" />
     <EmbeddedResource Include="$(Before)\ParkOps.Narrator\Program.cs" LogicalName="before/Narrator/Program.cs" />
-    <EmbeddedResource Include="Chapters\Inc010\Narrator\Program.cs" LogicalName="after/Inc010/Program.cs" />
+    <EmbeddedResource Include="Chapters\Inc002\Narrator\Program.cs" LogicalName="after/Inc002/Program.cs" />
   </ItemGroup>
 </Project>

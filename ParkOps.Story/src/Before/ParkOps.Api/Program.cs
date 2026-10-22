@@ -18,10 +18,10 @@ app.MapOpenApi();
 app.MapPost("/tours", (TourBooking booking) => Results.Created($"/tours/{booking.GuestName}", booking));
 
 // dnedry: emergency access. Leave it in.
-// ▶ INC-008b: contractor endpoint still live, nothing marks it deprecated (fix: [Obsolete] → OpenAPI "deprecated")
+// ▶ INC-001b: contractor endpoint still live, nothing marks it deprecated (fix: [Obsolete] → OpenAPI "deprecated")
 app.MapPost("/system/override", () => Results.Ok("Override accepted."));
 
 app.Run();
 
-// ▶ INC-008a: validation is sync, so it can't ask the database if the paddock is open (fix: AsyncValidationAttribute)
+// ▶ INC-001a: validation is sync, so it can't ask the database if the paddock is open (fix: AsyncValidationAttribute)
 public record TourBooking([Required] string GuestName, [Required] string Paddock); // dnedry: TODO check paddock is open

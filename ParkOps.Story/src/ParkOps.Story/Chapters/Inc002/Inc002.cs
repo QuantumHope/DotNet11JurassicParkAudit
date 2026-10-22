@@ -1,4 +1,3 @@
-using ParkOps.Core.Sensors;
 using ParkOps.Story.Beats;
 using ParkOps.Story.Code;
 using ParkOps.Story.Story;
@@ -6,69 +5,60 @@ using SadRogue.Primitives;
 
 namespace ParkOps.Story.Chapters.Inc002;
 
-/// <summary>Lesson 2, LINQ FullJoin. Incident INC-002, "The headcount": an inner join that can only ever count the animals it expected to find.</summary>
+/// <summary>
+/// Lesson 2, the Microsoft.Extensions.AI failover chat client. Incident INC-002, "The narrator went silent": the tour
+/// narrator has one model, and when it's unavailable the guests hear nothing.
+/// </summary>
 public static class Inc002
 {
-    private const string Path = "src/ParkOps.ControlRoom/Panels/CensusPanel.cs";
+    private const string ProgramPath = "src/ParkOps.Narrator/Program.cs";
 
     public static Chapter Build(Pages pages)
     {
         var finding = Findings.Get("INC-002");
-        var before = SourceFile.Load("before/CensusPanel.cs", Path);
-        var after = SourceFile.Load("after/CensusPanel.cs", Path);
-
-        var roster = Census.Roster();
-        var tracked = SensorNetwork.Sweep();
-        var located = Census.Located(roster, tracked);
-        var missing = Census.Unrostered(roster, tracked).Count;
-
         var title = finding.LessonLabel;
+        var before = SourceFile.Load("before/Narrator/Program.cs", ProgramPath);
+        var after = SourceFile.Load("after/Inc002/Program.cs", ProgramPath);
+
         return new(finding.Id, $"{finding.LessonLabel}  {finding.Feature}", finding.Lesson,
         [
-            new FindingBeat(finding, "Animal census  (F2 ANIMALS)", Path,
+            new FindingBeat(finding, "Tour narrator  (ParkOps.Narrator)", ProgramPath,
             [
                 new("Observation",
-                    $"The control room's census has reported every rostered animal located, {roster.Count} of {roster.Count}, " +
-                    "every day since go-live. The census status light has never been anything but green.",
-                    $"{located} / {roster.Count}", "animals located, according to ParkOps"),
+                    "The tour is booked and the vehicles roll out. The narrator greets guests at each paddock using a local " +
+                    "language model. When that model isn't available it doesn't fall back to anything: it logs an exception and goes quiet.",
+                    "1", "model the narrator can use"),
                 new("Why it matters",
-                    "The census is how the park knows whether animals are getting out, or getting in. " +
-                    "A count that can't come out wrong isn't a count. It just repeats the roster back to you.",
-                    $"{tracked.Count}", "distinct signals on the motion grid, from the same sweep"),
+                    "Models get updated, renamed and taken down. A second model is already installed on the vehicles; nothing " +
+                    "uses it.",
+                    "0", "fallbacks configured"),
             ], pages.Next()),
 
-            new CensusExhibit(finding, CodePath.Before, pages.Next()),
+            new NarratorExhibit(finding, CodePath.Before, pages.Next()),
 
             new CodeBeat(title, before,
             [
-                new("expected.Join(", "Root cause",
-                    "Join is an inner join. A sensor signal with no roster entry has nothing to match, so it's dropped " +
-                    "before anything counts it. The query can only ever find animals it already expected.",
-                    new Rectangle(52, 21, 62, 7)),
+                new("IChatClient narrator = new OllamaApiClient(ollama, primaryModel);", "One model, no plan B",
+                    "The narrator talks to exactly one client. backupModel is parsed from the command line, then never used.",
+                    new Rectangle(28, 27, 90, 6)),
             ], pages.Next()),
 
-            // The idea, drawn, before the code changes: what each kind of join keeps.
-            new JoinConceptBeat(finding, roster.Count, tracked.Count, located, pages.Next()),
-
-            new FixBeat(title, before, after, $"{finding.Platform}  ·  {finding.Feature}",
+            new FixBeat(title, $"{finding.Platform}  ·  {finding.Feature}",
             [
-                new("expected.FullJoin(", "New in .NET 11",
-                    "FullJoin keeps rows from both sides. Where there's no match, that side comes through as null, " +
-                    "so a missing animal and an unknown signal both turn into rows you can report on.",
-                    new Rectangle(56, 26, 60, 7)),
+                new FileFix(before, after, new("new OrderedFailoverChatClient", "Failover, in the client pipeline",
+                    "OrderedFailoverChatClient wraps the clients in order and moves to the next when one fails. It's experimental " +
+                    "(MEAI001), and it isn't tied to .NET 11: MEAI 10.11 runs on .NET 10 too.",
+                    new Rectangle(28, 27, 90, 6))),
             ], pages.Next()),
 
-            new CensusExhibit(finding, CodePath.After, pages.Next()),
+            new NarratorExhibit(finding, CodePath.After, pages.Next()),
 
-            new ResolutionBeat(finding, () =>
-                {
-                    var fixedCensus = Census.Render(CodePath.After, roster, tracked);
-                    var beforeCensus = Census.Render(CodePath.Before, roster, tracked);
-                    return new($"{located} / {roster.Count}", $"\"{beforeCensus.Lines[^1].Text}\". The light stays green whatever the motion grid sees.",
-                        $"{missing} found", $"\"{fixedCensus.Lines[0].Text}\". The census goes red and lists each tag.");
-                },
-                "One file, one operator: expected.Join(...) became expected.FullJoin(...), with each side's missing value labelled.",
-                "Reconcile against both sources. Any time a report compares two lists, ask what happens to rows that only appear on one side.",
+            new ResolutionBeat(finding, () => new(
+                    "Silent", "the primary model failed and the guests heard nothing.",
+                    "Speaks", "the primary fails exactly as before; OrderedFailoverChatClient moves on to the backup."),
+                "ParkOps.Narrator wraps the primary and backup models in an OrderedFailoverChatClient.",
+                "Treat model endpoints like any other dependency: plan for them to be down. Failover belongs in the client " +
+                "pipeline, not in a catch block.",
                 pages.Next()),
         ]);
     }

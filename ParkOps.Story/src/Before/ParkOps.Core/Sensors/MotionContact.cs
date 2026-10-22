@@ -2,7 +2,7 @@ using ParkOps.Core.Animals;
 
 namespace ParkOps.Core.Sensors;
 
-// ▶ INC-003a: marker base type + one wrapper per case (fix: union)
+// ▶ INC-004a: marker base type + one wrapper per case (fix: union)
 public abstract record MotionContact
 {
     public abstract object Value { get; }
